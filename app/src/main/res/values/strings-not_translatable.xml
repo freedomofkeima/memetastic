@@ -68,5 +68,7 @@
     <string name="pref_key__is_overview_statusbar_hidden" translatable="false">pref_key__is_overview_statusbar_hidden</string>
     <string name="pref_key__thumbnail_quality__percent" translatable="false">pref_key__thumbnail_quality__percent</string>
     <string name="pref_key__language" translatable="false">pref_key__language</string>
+    <string name="pref_key__save_directory" translatable="false">pref_key__save_directory</string>
+    <string name="pref_key__last_asset_archive_date">pref_key__last_asset_archive_date</string>
 
 </resources>

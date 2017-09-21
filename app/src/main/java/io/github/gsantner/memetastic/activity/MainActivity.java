@@ -49,11 +49,13 @@ import io.github.gsantner.memetastic.data.MemeOriginAssets;
 import io.github.gsantner.memetastic.data.MemeOriginFavorite;
 import io.github.gsantner.memetastic.data.MemeOriginInterface;
 import io.github.gsantner.memetastic.data.MemeOriginStorage;
+import io.github.gsantner.memetastic.service.AssetUpdater;
 import io.github.gsantner.memetastic.ui.GridDecoration;
 import io.github.gsantner.memetastic.ui.GridRecycleAdapter;
 import io.github.gsantner.memetastic.util.ActivityUtils;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
+import io.github.gsantner.memetastic.util.PermissionChecker;
 import io.github.gsantner.memetastic.util.ThumbnailCleanupTask;
 
 public class MainActivity extends AppCompatActivity
@@ -160,6 +162,9 @@ public class MainActivity extends AppCompatActivity
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        PermissionChecker.doIfPermissionGranted(this);
+        new AssetUpdater.UpdateThread(this, true).start();
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -214,6 +219,10 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
     }
 
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PermissionChecker.checkPermissionResult(this, requestCode, permissions, grantResults);
+    }
 
     @Override
     public void onBackPressed() {

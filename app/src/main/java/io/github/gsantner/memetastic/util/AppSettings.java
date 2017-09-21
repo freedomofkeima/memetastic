@@ -1,15 +1,21 @@
 package io.github.gsantner.memetastic.util;
 
 import android.content.Context;
+import android.os.Environment;
 
+import net.gsantner.opoc.util.AppSettingsBase;
+
+import java.io.File;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
-import net.gsantner.opoc.util.AppSettingsBase;
+import io.github.gsantner.memetastic.service.AssetUpdater;
 
 public class AppSettings extends AppSettingsBase {
     private static final int MAX_FAVS = 50;
@@ -205,5 +211,33 @@ public class AppSettings extends AppSettingsBase {
 
     public String getLanguage() {
         return getString(R.string.pref_key__language, "");
+    }
+
+    public void setSaveDirectory(String value) {
+        setString(R.string.pref_key__save_directory, value);
+    }
+
+    public File getSaveDirectory() {
+        String dir = getString(R.string.pref_key__save_directory, "");
+        if (dir.isEmpty()) {
+
+            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    , rstr(R.string.app_name).toLowerCase())
+                    .getAbsolutePath();
+            setSaveDirectory(dir);
+        }
+        return new File(dir);
+    }
+
+    public Date getLastAssetArchiveDate() throws ParseException {
+        String date = getString(R.string.pref_key__last_asset_archive_date, "");
+        if (date.isEmpty()) {
+            return new Date(0);
+        }
+        return AssetUpdater.FORMAT_RFC3339.parse(date);
+    }
+
+    public void setLastArchiveDate(Date value) {
+        setString(R.string.pref_key__last_asset_archive_date, AssetUpdater.FORMAT_RFC3339.format(value));
     }
 }
