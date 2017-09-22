@@ -56,7 +56,7 @@ public class MemeLibConfig {
         return 0;
     }
 
-    public static final int MEME_FULLSCREEN_MAX_IMAGESIZE = 1200;
+    public static final int MEME_FULLSCREEN_MAX_IMAGESIZE = 2000;
 
 
     /**

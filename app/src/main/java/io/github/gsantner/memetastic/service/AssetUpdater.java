@@ -39,7 +39,7 @@ public class AssetUpdater {
     private static final String URL_ARCHIVE_ZIP = "https://github.com/gsantner/memetastic-assets/archive/master.zip";
     private static final String URL_API = "https://api.github.com/repos/gsantner/memetastic-assets";
     private final static String MEMETASTIC_CONFIG_FILE = "+0A_memetastic.conf.json";
-    private final static String[] MEMETASTIC_IMAGES_EXTS = {"png", "jpg", "jpeg"};
+    private final static String[] MEMETASTIC_IMAGES_EXTS = {"png", "jpg", "jpeg", "webp"};
     private final static String[] MEMETASTIC_FONT_EXTS = {"otf", "ttf"};
 
     public static File getDownloadedAssetsDir(AppSettings appSettings) {
@@ -211,6 +211,7 @@ public class AssetUpdater {
                 MemeData.Image dataImage = new MemeData.Image();
                 dataImage.image = confImage;
                 dataImage.fullPath = new File(folder, confImage.getFilename());
+                dataImage.isTemplate = true;
                 if (dataImage.fullPath.exists()) {
                     dataImages.add(dataImage);
                 } else {

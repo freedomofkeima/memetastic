@@ -27,5 +27,6 @@ public class MemeData implements Serializable {
     public static class Image {
         public MemeConfig.Image image;
         public File fullPath;
+        public boolean isTemplate;
     }
 }
