@@ -19,6 +19,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -120,6 +121,29 @@ public class FileUtils {
             }
         }
         return buf;
+    }
+
+    // Read binary stream (of unknown data size)
+    public static byte[] readCloseBinaryStream(final InputStream stream) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int read;
+            while ((read = stream.read(buffer)) != -1) {
+                baos.write(buffer, 0, read);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return baos.toByteArray();
     }
 
     public static boolean writeFile(final File file, byte[] data) {

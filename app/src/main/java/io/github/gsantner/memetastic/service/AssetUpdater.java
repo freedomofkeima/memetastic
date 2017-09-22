@@ -1,8 +1,12 @@
 package io.github.gsantner.memetastic.service;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.support.v4.content.ContextCompat;
 
 import net.gsantner.opoc.util.Callback;
 import net.gsantner.opoc.util.FileUtils;
@@ -14,6 +18,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +38,7 @@ public class AssetUpdater {
 
     private static final String URL_ARCHIVE_ZIP = "https://github.com/gsantner/memetastic-assets/archive/master.zip";
     private static final String URL_API = "https://api.github.com/repos/gsantner/memetastic-assets";
-    private final static String MEMETASTIC_CONFIG_FILE = ".memetastic.conf.json";
+    private final static String MEMETASTIC_CONFIG_FILE = "+0A_memetastic.conf.json";
     private final static String[] MEMETASTIC_IMAGES_EXTS = {"png", "jpg", "jpeg"};
     private final static String[] MEMETASTIC_FONT_EXTS = {"otf", "ttf"};
 
@@ -42,6 +48,10 @@ public class AssetUpdater {
 
     public static File getCustomAssetsDir(AppSettings appSettings) {
         return new File(appSettings.getSaveDirectory(), "templates");
+    }
+
+    public static File getBundledAssetsDir(AppSettings appSettings) {
+        return new File(appSettings.getContext().getCacheDir(), "bundled");
     }
 
     public static class UpdateThread extends Thread {
@@ -85,6 +95,7 @@ public class AssetUpdater {
                 e.printStackTrace();
             }
             AppCast.DOWNLOAD_REQUEST_RESULT.send(_context, DOWNLOAD_REQUEST_RESULT__FAILED);
+            new LoadAssetsThread(_context).start();
         }
 
 
@@ -116,7 +127,6 @@ public class AssetUpdater {
                 AppCast.DOWNLOAD_STATUS.send(_context, ok ? DOWNLOAD_STATUS__FINISHED : DOWNLOAD_STATUS__FAILED, 100);
                 _appSettings.setLastArchiveDate(date);
                 _isAlreadyDownloading = false;
-                new LoadAssetsThread(_context).start();
             }
         }
     }
@@ -143,16 +153,28 @@ public class AssetUpdater {
             fonts.clear();
             images.clear();
 
-            loadConfigFromFolder(getDownloadedAssetsDir(_appSettings), fonts, images);
-            loadConfigFromFolder(getCustomAssetsDir(_appSettings), fonts, images);
+            boolean permGranted = ContextCompat.checkSelfPermission(_context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
+
+            /*if (permGranted) {
+                loadConfigFromFolder(getDownloadedAssetsDir(_appSettings), fonts, images);
+                loadConfigFromFolder(getCustomAssetsDir(_appSettings), fonts, images);
+            }*/
+            if (!permGranted || fonts.isEmpty() || images.isEmpty()) {
+                loadBundledAssets(fonts, images);
+                loadConfigFromFolder(getBundledAssetsDir(_appSettings), fonts, images);
+            }
 
             _isAlreadyLoading = false;
         }
 
-        public void loadConfigFromFolder(File folder, List<MemeData.Font> dataFonts, List<MemeData.Image> dataImages) {
+        private void loadConfigFromFolder(File folder, List<MemeData.Font> dataFonts, List<MemeData.Image> dataImages) {
             if (!folder.exists() && !folder.mkdirs()) {
                 return;
             }
+            if (folder.list().length == 0) {
+                return;
+            }
+
             MemeConfig.Config conf = null;
             File configFile = new File(folder, MEMETASTIC_CONFIG_FILE);
             FileUtils.touch(new File(folder, ".nomedia"));
@@ -267,7 +289,7 @@ public class AssetUpdater {
         private MemeConfig.Font generateFontEntry(File folder, String filename) {
             MemeConfig.Font confFont = new MemeConfig.Font();
             confFont.setFilename(filename);
-            confFont.setTitle(filename.replace("_", " "));
+            confFont.setTitle(filename.substring(0, filename.lastIndexOf(".")).replace("_", " "));
 
             return confFont;
         }
@@ -280,9 +302,29 @@ public class AssetUpdater {
             confImage.setImageTexts(new ArrayList<MemeConfig.ImageText>());
             confImage.setFilename(filename);
             confImage.setTags(tags);
-            confImage.setTitle(filename.replace("_", " "));
+            confImage.setTitle(filename.substring(0, filename.lastIndexOf(".")).replace("_", " "));
 
             return confImage;
         }
+
+
+        @SuppressWarnings("ResultOfMethodCallIgnored")
+        private void loadBundledAssets(List<MemeData.Font> fonts, List<MemeData.Image> images) {
+            AssetManager assetManager = _context.getAssets();
+            File config = new File(getBundledAssetsDir(_appSettings), MEMETASTIC_CONFIG_FILE);
+            config.delete();
+            try {
+                File cacheDir = getBundledAssetsDir(_appSettings);
+                if (cacheDir.exists() || cacheDir.mkdirs()) {
+                    for (String assetFilename : assetManager.list("bundled")) {
+                        InputStream is = assetManager.open("bundled/" + assetFilename);
+                        byte[] data = FileUtils.readCloseBinaryStream(is);
+                        FileUtils.writeFile(new File(cacheDir, assetFilename), data);
+                    }
+                }
+            } catch (IOException ignored) {
+            }
+        }
     }
+
 }
