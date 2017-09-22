@@ -85,23 +85,37 @@ public class MemeAssetConfig implements Serializable {
 
     public static class Image {
         private List<String> _tags;
+        private List<ImageText> _imageTexts;
         private String _title;
         private String _filename;
-        private long _addedAt;
-        private long _updatedAt;
 
         public Image fromJson(JSONObject json) throws JSONException {
             setTitle(json.getString("title"));
             setFilename(json.getString("filename"));
-            setAddedAt(json.getLong("added_at"));
-            setUpdatedAt(json.optLong("updated_at", 0));
 
+            JSONArray jsonArr;
             List<String> tagsList = new ArrayList<>();
-            JSONArray tags = json.getJSONArray("tags");
-            for (int i = 0; i < tags.length(); i++) {
-                tagsList.add(tags.getString(i));
+            if (json.has("tags")) {
+                jsonArr = json.getJSONArray("tags");
+                for (int i = 0; i < jsonArr.length(); i++) {
+                    tagsList.add(jsonArr.getString(i));
+                }
             }
             setTags(tagsList);
+
+            List<ImageText> imageTexts = new ArrayList<>();
+            if (json.has("image_texts")) {
+                jsonArr = json.getJSONArray("image_texts");
+                for (int i = 0; i < jsonArr.length(); i++) {
+                    try {
+                        ImageText element = new ImageText().fromJson(jsonArr.getJSONObject(i));
+                        imageTexts.add(element);
+                    } catch (JSONException ignored) {
+                    }
+                }
+            }
+            setImageTexts(imageTexts);
+
             return this;
         }
 
@@ -109,11 +123,8 @@ public class MemeAssetConfig implements Serializable {
             JSONObject root = new JSONObject();
             root.put("title", getTitle());
             root.put("filename", getFilename());
-            root.put("added_at", getAddedAt());
             root.put("tags", new JSONArray(getTags()));
-            if (getUpdatedAt() != 0) {
-                root.put("updated_at", getUpdatedAt());
-            }
+
             return root;
         }
 
@@ -148,33 +159,62 @@ public class MemeAssetConfig implements Serializable {
             _tags = tags;
         }
 
-        public long getUpdatedAt() {
-            return _updatedAt;
+        public List<ImageText> getImageTexts() {
+            return _imageTexts;
         }
 
-        public void setUpdatedAt(long updatedAt) {
-            _updatedAt = updatedAt;
+        public void setImageTexts(List<ImageText> imageTexts) {
+            _imageTexts = imageTexts;
+        }
+    }
+
+    public static class ImageText {
+        private int _id; // -1 top, -2 bottom
+        private String _text;
+
+        public ImageText fromJson(JSONObject json) throws JSONException {
+            setId(json.getInt("id"));
+            setText(json.getString("text"));
+            return this;
         }
 
-        public long getAddedAt() {
-            if (_addedAt == 0) {
-                setAddedAt(System.currentTimeMillis());
-            }
-            return _addedAt;
+        public JSONObject toJson() throws JSONException {
+            JSONObject root = new JSONObject();
+            root.put("id", getId());
+            root.put("text", getText());
+
+            return root;
         }
 
-        public void setAddedAt(long addedAt) {
-            _addedAt = addedAt;
+        public int getId() {
+            return _id;
+        }
+
+        public void setId(int id) {
+            _id = id;
+        }
+
+        public String getText() {
+            return _text;
+        }
+
+        public void setText(String text) {
+            _text = text;
         }
     }
 
     public static class Font {
+        public static final int FONT_TYPE__DEFAULT = 0;
+        public static final int FONT_TYPE__COMIC = 1;
+
         private String _title;
         private String _filename;
+        private int _fontType;
 
         public Font fromJson(JSONObject json) throws JSONException {
             setTitle(json.getString("title"));
             setFilename(json.getString("filename"));
+            setFontType(json.optInt("font_type", 0));
             return this;
         }
 
@@ -182,6 +222,9 @@ public class MemeAssetConfig implements Serializable {
             JSONObject root = new JSONObject();
             root.put("title", getTitle());
             root.put("filename", getFilename());
+            if (getFontType() != 0) {
+                root.put("font_type", getFontType());
+            }
             return root;
         }
 
@@ -202,6 +245,14 @@ public class MemeAssetConfig implements Serializable {
 
         public void setFilename(String filename) {
             _filename = filename;
+        }
+
+        public int getFontType() {
+            return _fontType;
+        }
+
+        public void setFontType(int fontType) {
+            _fontType = fontType;
         }
     }
 }

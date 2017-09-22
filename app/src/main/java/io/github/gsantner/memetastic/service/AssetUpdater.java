@@ -16,7 +16,10 @@ import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
+import io.github.gsantner.memetastic.data.MemeAssetConfig;
+import io.github.gsantner.memetastic.data.MemeAssetList;
 import io.github.gsantner.memetastic.util.AppCast;
 import io.github.gsantner.memetastic.util.AppSettings;
 
@@ -26,6 +29,12 @@ public class AssetUpdater {
 
     private static final String URL_ARCHIVE_ZIP = "https://github.com/gsantner/memetastic-assets/archive/master.zip";
     private static final String URL_API = "https://api.github.com/repos/gsantner/memetastic-assets";
+    private final static String MEMETASTIC_CONFIG_FILE = ".memetastic.conf.json";
+    private final static String[] MEMETASTIC_IMAGES_EXTS = {"png", "jpg", "jpeg"};
+
+    public static File getDownloadedAssetsDir(AppSettings appSettings) {
+        return new File(new File(appSettings.getSaveDirectory(), ".downloads"), "memetastic-assets");
+    }
 
     public static class UpdateThread extends Thread {
         public static final int DOWNLOAD_REQUEST_RESULT__FAILED = -1;
@@ -76,12 +85,12 @@ public class AssetUpdater {
                 return;
             }
             _isAlreadyDownloading = true;
-            File templatesDir = new File(_appSettings.getSaveDirectory(), "templates");
+            File templatesDir = getDownloadedAssetsDir(_appSettings);
             File file = new File(_appSettings.getSaveDirectory(), ".downloads");
             FileUtils.deleteRecursive(file);
             boolean ok;
             if (file.mkdirs() && (templatesDir.exists() || templatesDir.mkdirs())) {
-                file = new File(file, FORMAT_RFC3339.format(date) + ".zip");
+                file = new File(file, FORMAT_RFC3339.format(date) + ".memetastic.zip");
                 NetworkUtils.downloadFile(URL_ARCHIVE_ZIP, file, new Callback<Float>() {
                     public void onCallback(Float aFloat) {
                         if (_lastPercent != aFloat.intValue()) {
@@ -89,7 +98,7 @@ public class AssetUpdater {
                         }
                     }
                 });
-                ok = ZipUtils.unzip(file, templatesDir, false, new Callback<Float>() {
+                ok = ZipUtils.unzip(file, templatesDir, true, new Callback<Float>() {
                     public void onCallback(Float aFloat) {
                         if (_lastPercent != aFloat.intValue()) {
                             AppCast.DOWNLOAD_STATUS.send(_context, DOWNLOAD_STATUS__UNZIPPING, 50 + _lastPercent / 4);
@@ -101,6 +110,54 @@ public class AssetUpdater {
                 _appSettings.setLastArchiveDate(date);
                 _isAlreadyDownloading = false;
             }
+        }
+    }
+
+    public static class LoadAssetsThread extends Thread {
+        private static boolean _isAlreadyLoading = false;
+
+        private Context _context;
+        private AppSettings _appSettings;
+
+        public LoadAssetsThread(Context context) {
+            _context = context;
+            _appSettings = AppSettings.get();
+        }
+
+        @Override
+        public void run() {
+            if (_isAlreadyLoading) {
+                return;
+            }
+            _isAlreadyLoading = true;
+            List<MemeAssetList.MemeFont> fonts = MemeAssetList.getFonts();
+            List<MemeAssetList.MemeImage> images = MemeAssetList.getImages();
+            fonts.clear();
+            images.clear();
+
+            File templatesFolder = new File(_appSettings.getSaveDirectory(), "templates");
+
+            loadConfigFromFolder(getDownloadedAssetsDir(_appSettings), fonts, images);
+
+            _isAlreadyLoading = false;
+        }
+
+        public void loadConfigFromFolder(File folder, List<MemeAssetList.MemeFont> fonts, List<MemeAssetList.MemeImage> images) {
+            MemeAssetConfig.Config dataFromFolder = null;
+            File configFile = new File(folder, MEMETASTIC_CONFIG_FILE);
+            if (configFile.exists()) {
+                try {
+                    String contents = FileUtils.readTextFile(configFile);
+                    JSONObject json = new JSONObject(contents);
+                    dataFromFolder = new MemeAssetConfig.Config().fromJson(json);
+                } catch (Exception ignored) {
+                }
+            }
+
+            if (dataFromFolder == null) {
+                return;
+            }
+            
         }
     }
 }
