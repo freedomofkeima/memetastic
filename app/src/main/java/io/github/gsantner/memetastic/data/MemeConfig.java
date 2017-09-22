@@ -12,7 +12,7 @@ import java.util.List;
 
 
 @SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue", "SpellCheckingInspection", "UnusedReturnValue", "JavaDoc", "FieldCanBeLocal"})
-public class MemeAssetConfig implements Serializable {
+public class MemeConfig implements Serializable {
 
     public static class Config {
         private List<Font> _fonts;
@@ -84,6 +84,8 @@ public class MemeAssetConfig implements Serializable {
     }
 
     public static class Image {
+        public final static String IMAGE_TAG_CUSTOM = "custom";
+
         private List<String> _tags;
         private List<ImageText> _imageTexts;
         private String _title;

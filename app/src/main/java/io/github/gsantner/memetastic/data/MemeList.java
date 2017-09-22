@@ -36,7 +36,7 @@ public class MemeList implements MemeOriginInterface {
             try {
                 String contents = FileUtils.readTextFile(configFile);
                 JSONObject json = new JSONObject(contents);
-                MemeAssetConfig.Config list = new MemeAssetConfig.Config().fromJson(json);
+                MemeConfig.Config list = new MemeConfig.Config().fromJson(json);
             } catch (JSONException ignored) {
             }
         }

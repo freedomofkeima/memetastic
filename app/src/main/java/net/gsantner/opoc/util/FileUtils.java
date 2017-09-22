@@ -239,6 +239,16 @@ public class FileUtils {
         return ext != null ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) : null;
     }
 
+    // Example: Check if this is maybe a image: (str, "jpg", "png", "jpeg")
+    public static boolean hasExtension(String str, String... extensions) {
+        String lc = str.toLowerCase();
+        for (String extension : extensions) {
+            if (lc.endsWith("." + extension.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static boolean renameFile(File srcFile, File destFile) {
         if (srcFile.getAbsolutePath().equals(destFile.getAbsolutePath())) {

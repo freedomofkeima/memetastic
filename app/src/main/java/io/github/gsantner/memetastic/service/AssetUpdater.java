@@ -13,13 +13,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import io.github.gsantner.memetastic.data.MemeAssetConfig;
-import io.github.gsantner.memetastic.data.MemeAssetList;
+import io.github.gsantner.memetastic.data.MemeConfig;
+import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.util.AppCast;
 import io.github.gsantner.memetastic.util.AppSettings;
 
@@ -31,9 +34,14 @@ public class AssetUpdater {
     private static final String URL_API = "https://api.github.com/repos/gsantner/memetastic-assets";
     private final static String MEMETASTIC_CONFIG_FILE = ".memetastic.conf.json";
     private final static String[] MEMETASTIC_IMAGES_EXTS = {"png", "jpg", "jpeg"};
+    private final static String[] MEMETASTIC_FONT_EXTS = {"otf", "ttf"};
 
     public static File getDownloadedAssetsDir(AppSettings appSettings) {
         return new File(new File(appSettings.getSaveDirectory(), ".downloads"), "memetastic-assets");
+    }
+
+    public static File getCustomAssetsDir(AppSettings appSettings) {
+        return new File(appSettings.getSaveDirectory(), "templates");
     }
 
     public static class UpdateThread extends Thread {
@@ -105,10 +113,10 @@ public class AssetUpdater {
                         }
                     }
                 });
-                FileUtils.writeFile(new File(templatesDir, ".nomedia"), "");
                 AppCast.DOWNLOAD_STATUS.send(_context, ok ? DOWNLOAD_STATUS__FINISHED : DOWNLOAD_STATUS__FAILED, 100);
                 _appSettings.setLastArchiveDate(date);
                 _isAlreadyDownloading = false;
+                new LoadAssetsThread(_context).start();
             }
         }
     }
@@ -130,34 +138,151 @@ public class AssetUpdater {
                 return;
             }
             _isAlreadyLoading = true;
-            List<MemeAssetList.MemeFont> fonts = MemeAssetList.getFonts();
-            List<MemeAssetList.MemeImage> images = MemeAssetList.getImages();
+            List<MemeData.Font> fonts = MemeData.getFonts();
+            List<MemeData.Image> images = MemeData.getImages();
             fonts.clear();
             images.clear();
 
-            File templatesFolder = new File(_appSettings.getSaveDirectory(), "templates");
-
             loadConfigFromFolder(getDownloadedAssetsDir(_appSettings), fonts, images);
+            loadConfigFromFolder(getCustomAssetsDir(_appSettings), fonts, images);
 
             _isAlreadyLoading = false;
         }
 
-        public void loadConfigFromFolder(File folder, List<MemeAssetList.MemeFont> fonts, List<MemeAssetList.MemeImage> images) {
-            MemeAssetConfig.Config dataFromFolder = null;
+        public void loadConfigFromFolder(File folder, List<MemeData.Font> dataFonts, List<MemeData.Image> dataImages) {
+            if (!folder.exists() && !folder.mkdirs()) {
+                return;
+            }
+            MemeConfig.Config conf = null;
             File configFile = new File(folder, MEMETASTIC_CONFIG_FILE);
+            FileUtils.touch(new File(folder, ".nomedia"));
             if (configFile.exists()) {
                 try {
                     String contents = FileUtils.readTextFile(configFile);
                     JSONObject json = new JSONObject(contents);
-                    dataFromFolder = new MemeAssetConfig.Config().fromJson(json);
+                    conf = new MemeConfig.Config().fromJson(json);
                 } catch (Exception ignored) {
                 }
             }
 
-            if (dataFromFolder == null) {
-                return;
+            // Create new if empty
+            if (conf == null) {
+                conf = new MemeConfig.Config();
+                conf.setFonts(new ArrayList<MemeConfig.Font>());
+                conf.setImages(new ArrayList<MemeConfig.Image>());
             }
-            
+
+            boolean assetsChanged = checkForNewAssets(folder, conf);
+
+            for (MemeConfig.Font confFont : conf.getFonts()) {
+                MemeData.Font dataFont = new MemeData.Font();
+                dataFont.font = confFont;
+                dataFont.fullPath = new File(folder, confFont.getFilename());
+                if (dataFont.fullPath.exists()) {
+                    dataFonts.add(dataFont);
+                } else {
+                    assetsChanged = true;
+                }
+            }
+
+            for (MemeConfig.Image confImage : conf.getImages()) {
+                MemeData.Image dataImage = new MemeData.Image();
+                dataImage.image = confImage;
+                dataImage.fullPath = new File(folder, confImage.getFilename());
+                if (dataImage.fullPath.exists()) {
+                    dataImages.add(dataImage);
+                } else {
+                    assetsChanged = true;
+                }
+            }
+
+            if (assetsChanged) {
+                try {
+                    FileUtils.writeFile(configFile, conf.toJson().toString());
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        private boolean checkForNewAssets(File folder, MemeConfig.Config conf) {
+            boolean assetsChanged = false;
+            final ArrayList<String> extensions = new ArrayList<>();
+            extensions.addAll(Arrays.asList(MEMETASTIC_IMAGES_EXTS));
+            extensions.addAll(Arrays.asList(MEMETASTIC_FONT_EXTS));
+
+            // Get all files that are maybe compatible
+            ArrayList<String> files = new ArrayList<>(Arrays.asList(
+                    folder.list(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            String filename = s.toLowerCase();
+
+                            for (String extension : extensions) {
+                                if (filename.endsWith("." + extension.toLowerCase())) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    })
+            ));
+
+            // Check if all fonts and images are indexed
+            for (MemeConfig.Font data : conf.getFonts()) {
+                if (files.contains(data.getFilename())) {
+                    files.remove(data.getFilename());
+                }
+            }
+            for (MemeConfig.Image data : conf.getImages()) {
+                if (files.contains(data.getFilename())) {
+                    files.remove(data.getFilename());
+                }
+            }
+
+            // Index everything not indexed yet
+            for (String filename : files) {
+                String flc = filename.toLowerCase();
+                for (String ext : MEMETASTIC_IMAGES_EXTS) {
+                    if (filename.endsWith("." + ext)) {
+                        MemeConfig.Image image = generateImageEntry(folder, filename);
+                        if (image != null) {
+                            conf.getImages().add(image);
+                            assetsChanged = true;
+                        }
+                    }
+                }
+                for (String ext : MEMETASTIC_FONT_EXTS) {
+                    if (filename.endsWith("." + ext)) {
+                        MemeConfig.Font font = generateFontEntry(folder, filename);
+                        if (font != null) {
+                            conf.getFonts().add(font);
+                            assetsChanged = true;
+                        }
+                    }
+                }
+            }
+            return assetsChanged;
+        }
+
+        private MemeConfig.Font generateFontEntry(File folder, String filename) {
+            MemeConfig.Font confFont = new MemeConfig.Font();
+            confFont.setFilename(filename);
+            confFont.setTitle(filename.replace("_", " "));
+
+            return confFont;
+        }
+
+        private MemeConfig.Image generateImageEntry(File folder, String filename) {
+            ArrayList<String> tags = new ArrayList<>();
+            tags.add(MemeConfig.Image.IMAGE_TAG_CUSTOM);
+
+            MemeConfig.Image confImage = new MemeConfig.Image();
+            confImage.setImageTexts(new ArrayList<MemeConfig.ImageText>());
+            confImage.setFilename(filename);
+            confImage.setTags(tags);
+            confImage.setTitle(filename.replace("_", " "));
+
+            return confImage;
         }
     }
 }
