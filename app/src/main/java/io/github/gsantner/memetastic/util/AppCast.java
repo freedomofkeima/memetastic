@@ -44,6 +44,15 @@ public class AppCast {
         }
     }
 
+    public static class ASSETS_LOADED {
+        public static final String ACTION = "DOWNLOAD_REQUEST_RESULT";
+
+        public static void send(Context c) {
+            Intent intent = new Intent(ACTION);
+            sendBroadcast(c, intent);
+        }
+    }
+
     public static class DOWNLOAD_STATUS {
         public static final String ACTION = "DOWNLOAD_STATUS";
         public static final String EXTRA_RESULT = "EXTRA_RESULT";

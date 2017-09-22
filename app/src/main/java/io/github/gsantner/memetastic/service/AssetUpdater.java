@@ -155,16 +155,16 @@ public class AssetUpdater {
 
             boolean permGranted = ContextCompat.checkSelfPermission(_context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
 
-            /*if (permGranted) {
+            if (permGranted) {
                 loadConfigFromFolder(getDownloadedAssetsDir(_appSettings), fonts, images);
                 loadConfigFromFolder(getCustomAssetsDir(_appSettings), fonts, images);
-            }*/
+            }
             if (!permGranted || fonts.isEmpty() || images.isEmpty()) {
                 loadBundledAssets(fonts, images);
                 loadConfigFromFolder(getBundledAssetsDir(_appSettings), fonts, images);
             }
-
             _isAlreadyLoading = false;
+            AppCast.ASSETS_LOADED.send(_context);
         }
 
         private void loadConfigFromFolder(File folder, List<MemeData.Font> dataFonts, List<MemeData.Image> dataImages) {
@@ -237,10 +237,9 @@ public class AssetUpdater {
                     folder.list(new FilenameFilter() {
                         @Override
                         public boolean accept(File file, String s) {
-                            String filename = s.toLowerCase();
-
+                            String flc = s.toLowerCase();
                             for (String extension : extensions) {
-                                if (filename.endsWith("." + extension.toLowerCase())) {
+                                if (flc.endsWith("." + extension.toLowerCase())) {
                                     return true;
                                 }
                             }
@@ -265,7 +264,7 @@ public class AssetUpdater {
             for (String filename : files) {
                 String flc = filename.toLowerCase();
                 for (String ext : MEMETASTIC_IMAGES_EXTS) {
-                    if (filename.endsWith("." + ext)) {
+                    if (flc.endsWith("." + ext)) {
                         MemeConfig.Image image = generateImageEntry(folder, filename);
                         if (image != null) {
                             conf.getImages().add(image);
@@ -274,7 +273,7 @@ public class AssetUpdater {
                     }
                 }
                 for (String ext : MEMETASTIC_FONT_EXTS) {
-                    if (filename.endsWith("." + ext)) {
+                    if (flc.endsWith("." + ext)) {
                         MemeConfig.Font font = generateFontEntry(folder, filename);
                         if (font != null) {
                             conf.getFonts().add(font);
