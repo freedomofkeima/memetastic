@@ -348,7 +348,6 @@ public class MainActivity extends AppCompatActivity
         _drawer.closeDrawers();
         _tabLayout.setVisibility(item.getItemId() == R.id.action_mode_create ? View.VISIBLE : View.GONE);
         if (imageList != null) {
-            //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
             GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(imageList, this);
             setRecyclerMemeListAdapter(recyclerMemeAdapter);
             return true;
