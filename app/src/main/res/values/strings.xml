@@ -94,4 +94,5 @@
     <string name="pref_desc__language">Change language of this app. Restart app for changes to take effect</string>
     <string name="error_cannot_create_save_dir">Error: Cannot create save directory</string>
     <string name="error_storage_permission">Need permission for storage to save memes and templates</string>
+    <string name="main__memecat__other">Other</string>
 </resources>

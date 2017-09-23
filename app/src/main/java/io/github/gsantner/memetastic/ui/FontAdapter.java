@@ -42,7 +42,7 @@ public class FontAdapter extends ArrayAdapter<MemeFont> {
         return getTheView(position, convertView, parent);
     }
 
-    // set how the item should look like (rendered in own font)
+    // set how the item should look like (rendered in own data)
     private View getTheView(int position, View convertView, ViewGroup parent) {
         String fontName = getItem(position).getFontName();
         if (fontName.contains("_") && !fontName.endsWith("_")) ;

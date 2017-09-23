@@ -197,8 +197,8 @@ public class AppSettings extends AppSettingsBase {
         return getIntOfStringPref(R.string.pref_key__default_main_mode, 0);
     }
 
-    public boolean isShuffleMemeCategories() {
-        return getBool(R.string.pref_key__is_shuffle_meme_categories, false);
+    public boolean isShuffleTagLists() {
+        return getBool(R.string.pref_key__is_shuffle_meme_tags, false);
     }
 
     public boolean isEditorStatusBarHidden() {

@@ -84,7 +84,7 @@ public class MemeConfig implements Serializable {
     }
 
     public static class Image {
-        public final static String IMAGE_TAG_CUSTOM = "custom";
+        public final static String IMAGE_TAG_OTHER = "other";
 
         private List<String> _tags;
         private List<ImageText> _imageTexts;

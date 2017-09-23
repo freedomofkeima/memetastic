@@ -263,7 +263,7 @@ public class FileUtils {
         return ext != null ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) : null;
     }
 
-    // Example: Check if this is maybe a image: (str, "jpg", "png", "jpeg")
+    // Example: Check if this is maybe a data: (str, "jpg", "png", "jpeg")
     public static boolean hasExtension(String str, String... extensions) {
         String lc = str.toLowerCase();
         for (String extension : extensions) {

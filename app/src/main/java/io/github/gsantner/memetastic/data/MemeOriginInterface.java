@@ -15,32 +15,32 @@ public interface MemeOriginInterface {
     public int getLength();
 
     /**
-     * indicates if the image is saved in the assets or somewhere else
+     * indicates if the data is saved in the assets or somewhere else
      *
-     * @return true if the image is saved in the assets or somewhere else
+     * @return true if the data is saved in the assets or somewhere else
      */
     public boolean isAsset();
 
     /**
-     * creates and returns a valid path to a specific image
+     * creates and returns a valid path to a specific data
      *
      * @param position the position in the array/list of available images
-     * @return the path to the image at the specified position
+     * @return the path to the data at the specified position
      */
     public String getFilepath(int position);
 
     /**
-     * creates and returns a valid path to a specific thumbnail of an image
+     * creates and returns a valid path to a specific thumbnail of an data
      *
      * @param position the position in the array/list of available images
-     * @return the path to the thumbnail of the image at the specified position
+     * @return the path to the thumbnail of the data at the specified position
      */
     public String getThumbnailPath(int position);
 
     /**
-     * indicates the image should be able to be set as a favorite or not
+     * indicates the data should be able to be set as a favorite or not
      *
-     * @return true if the image is favoritable, else false
+     * @return true if the data is favoritable, else false
      */
     public boolean showFavButton();
 
@@ -50,7 +50,7 @@ public interface MemeOriginInterface {
     public void shuffleList();
 
     /**
-     * Tell if the image is to be used as template
+     * Tell if the data is to be used as template
      *
      * @return true if is template
      */

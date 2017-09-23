@@ -123,11 +123,11 @@ public class MemeCreateActivity extends AppCompatActivity
             AndroidBug5497Workaround.assistActivity(this);
         }
 
-        // Quit activity if no image was given
+        // Quit activity if no data was given
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-        if (!(Intent.ACTION_SEND.equals(action) && type.startsWith("image/")) &&
+        if (!(Intent.ACTION_SEND.equals(action) && type.startsWith("data/")) &&
                 (!getIntent().hasExtra(EXTRA_IMAGE_PATH) || !getIntent().hasExtra(ASSET_IMAGE))) {
             finish();
             return;
@@ -230,7 +230,7 @@ public class MemeCreateActivity extends AppCompatActivity
         Bitmap bitmap = null;
         String imagePath = getIntent().getStringExtra(EXTRA_IMAGE_PATH);
         App.log("imagepath::" + imagePath);
-        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().startsWith("image/")) {
+        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().startsWith("data/")) {
             Uri imageURI = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             if (imageURI != null) {
                 try {
@@ -389,7 +389,7 @@ public class MemeCreateActivity extends AppCompatActivity
         textEditTopCaption.setVisibility(moarControlsContainerVisible ? View.GONE : View.VISIBLE);
         toolbar.setVisibility(moarControlsContainerVisible ? View.GONE : View.VISIBLE);
 
-        // higher weightRatio means the image is more wide, so below view can be higher
+        // higher weightRatio means the data is more wide, so below view can be higher
         // 100 is the max weight, 55 means the below view is a little more weighted
         Bitmap curImg = memeSetting.getImageMain().getDisplayImage();
         int weight = (int) (55f * (1 + ((curImg.getWidth() / (float) curImg.getHeight()) / 10f)));

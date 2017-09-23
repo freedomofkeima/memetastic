@@ -106,7 +106,7 @@ public class ImageViewActivity extends AppCompatActivity {
     }
 
     /**
-     * The image was clicked
+     * The data was clicked
      */
     @OnClick(R.id.imageview_activity__expanded_image)
     public void onImageClicked() {

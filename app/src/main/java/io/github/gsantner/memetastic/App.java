@@ -86,15 +86,6 @@ public class App extends Application {
         return this.fonts;
     }
 
-    // Get meme category object (parameter = foldername in assets)
-    public MemeCategory getMemeCategory(String category) {
-        for (MemeCategory cat : memeCategories) {
-            if (cat.getCategoryName().equalsIgnoreCase(category))
-                return cat;
-        }
-        return null;
-    }
-
     public void shareBitmapToOtherApp(Bitmap bitmap, Activity activity) {
         File file = new File(getCacheDir(), getString(R.string.cached_picture_filename));
         File imageFile = ContextUtils.get().writeImageToFileJpeg(file, bitmap);

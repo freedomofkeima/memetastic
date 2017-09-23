@@ -155,12 +155,12 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
         holder.imageView.setVisibility(View.VISIBLE);
     }
 
-    // contains the image view for the meme and the favorite button to access them
+    // contains the data view for the meme and the favorite button to access them
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ImageView imageView;
         public ImageView imageButtonFav;
 
-        // saves the instance of the image view of the meme and favorite button to access them later
+        // saves the instance of the data view of the meme and favorite button to access them later
         public ViewHolder(View itemView) {
             super(itemView);
             imageButtonFav = (ImageView) itemView.findViewById(R.id.item__square_image__image_bottom_end);

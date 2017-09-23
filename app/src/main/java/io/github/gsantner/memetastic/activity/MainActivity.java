@@ -36,6 +36,9 @@ import net.gsantner.opoc.util.SimpleMarkdownParser;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -43,21 +46,18 @@ import butterknife.ButterKnife;
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
-import io.github.gsantner.memetastic.data.MemeCategory;
 import io.github.gsantner.memetastic.data.MemeData;
-import io.github.gsantner.memetastic.data.MemeLibConfig;
-import io.github.gsantner.memetastic.data.MemeOriginAssets;
 import io.github.gsantner.memetastic.data.MemeOriginFavorite;
 import io.github.gsantner.memetastic.data.MemeOriginInterface;
 import io.github.gsantner.memetastic.data.MemeOriginStorage;
 import io.github.gsantner.memetastic.service.AssetUpdater;
+import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 import io.github.gsantner.memetastic.ui.GridDecoration;
 import io.github.gsantner.memetastic.ui.GridRecycleAdapter;
 import io.github.gsantner.memetastic.util.ActivityUtils;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
 import io.github.gsantner.memetastic.util.PermissionChecker;
-import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, TabLayout.OnTabSelectedListener {
@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity
 
     App app;
     private String cameraPictureFilepath = "";
+    String[] _tagKeys, _tagValues;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +117,9 @@ public class MainActivity extends AppCompatActivity
         _navigationView.setNavigationItemSelectedListener(this);
         _tabLayout.setOnTabSelectedListener(this);
 
+        _tagKeys = getResources().getStringArray(R.array.meme_tags__keys);
+        _tagValues = getResources().getStringArray(R.array.meme_tags__titles);
+
         // Setup Floating Action Button
         int gridColumns = ContextUtils.get().isInPortraitMode()
                 ? app.settings.getGridColumnCountPortrait()
@@ -129,7 +133,7 @@ public class MainActivity extends AppCompatActivity
         RecyclerView.LayoutManager recyclerGridLayout = new GridLayoutManager(this, gridColumns);
         _recyclerMemeList.setLayoutManager(recyclerGridLayout);
 
-        for (String cat : getResources().getStringArray(R.array.meme_categories)) {
+        for (String cat : _tagValues) {
             TabLayout.Tab tab = _tabLayout.newTab();
             tab.setText(cat);
             _tabLayout.addTab(tab);
@@ -303,7 +307,7 @@ public class MainActivity extends AppCompatActivity
         _tabLayout.setVisibility(item.getItemId() == R.id.action_mode_create ? View.VISIBLE : View.GONE);
         if (memeOriginObject != null) {
             _drawer.closeDrawers();
-          //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
+            //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
             GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(MemeData.getImages(), this);
             setRecyclerMemeListAdapter(recyclerMemeAdapter);
             return true;
@@ -363,7 +367,7 @@ public class MainActivity extends AppCompatActivity
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try {
-                // Create an image file name
+                // Create an data file name
                 String imageFileName = getString(R.string.app_name) + "_" + System.currentTimeMillis();
                 File storageDir = new File(Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DCIM), "Camera");
@@ -407,34 +411,22 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
-        MemeOriginInterface memeOriginObject = null;
         int tabPos = tab.getPosition();
+        List<MemeData.Image> imageList = new ArrayList<>();
 
-        // Asset tabs
-        if (tabPos >= 0 && tabPos < MemeLibConfig.MEME_CATEGORIES.ALL.length) {
-            MemeCategory memeCategory = app.getMemeCategory(MemeLibConfig.MEME_CATEGORIES.ALL[tabPos]);
-            memeOriginObject = new MemeOriginAssets(memeCategory, getAssets());
+        if (tabPos >= 0 && tabPos < _tagKeys.length) {
+            imageList = MemeData.getImagesWithTag(_tagKeys[tabPos]);
         }
 
-        // Custom tab
-        if (tabPos >= 0 && tabPos == MemeLibConfig.MEME_CATEGORIES.ALL.length) {
-            File customFolder = ContextUtils.get().getPicturesMemetasticTemplatesCustomFolder();
-            _emptylistText.setText(getString(R.string.main__nodata__custom_templates, getString(R.string.custom_templates_visual)));
-            memeOriginObject = new MemeOriginStorage(customFolder, getString(R.string.dot_thumbnails));
-            ((MemeOriginStorage) memeOriginObject).setIsTemplate(true);
+        if (_areTabsReady) {
+            app.settings.setLastSelectedTab(tabPos);
         }
-        if (memeOriginObject != null) {
-            if (_areTabsReady) {
-                app.settings.setLastSelectedTab(tabPos);
-            }
-            if (app.settings.isShuffleMemeCategories()) {
-                memeOriginObject.shuffleList();
-            }
-            //GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
-            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(MemeData.getImages(), this);
-            setRecyclerMemeListAdapter(recyclerMemeAdapter);
+        if (app.settings.isShuffleTagLists()) {
+            Collections.shuffle(imageList);
         }
 
+        GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(imageList, this);
+        setRecyclerMemeListAdapter(recyclerMemeAdapter);
     }
 
     private final RectF point = new RectF(0, 0, 0, 0);

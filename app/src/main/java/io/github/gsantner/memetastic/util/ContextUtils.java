@@ -69,11 +69,11 @@ public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
     }
 
     /**
-     * Calculates the scaling factor to convert font size to size in pixels
+     * Calculates the scaling factor to convert data size to size in pixels
      *
      * @param w width of the bitmap where a text should be written on
      * @param h height of the bitmap where a text should be written on
-     * @return the size of the font in pixels
+     * @return the size of the data in pixels
      */
     public float getScalingFactorInPixelsForWritingOnPicture(int w, int h) {
         final float fontScaler = (float) 133;

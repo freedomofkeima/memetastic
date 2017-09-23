@@ -35,7 +35,7 @@ public class ImageLoaderTask<T> extends AsyncTask<File, Void, Bitmap> {
     private Bitmap loadStorageImage(File pathToImage) {
         File cacheFile = new File(_context.getCacheDir(), pathToImage.getAbsolutePath().substring(1));
         ContextUtils cu = ContextUtils.get();
-        Bitmap bitmap = null;
+        Bitmap bitmap;
         if (_loadThumbnail) {
             if (cacheFile.exists()) {
                 bitmap = cu.loadImageFromFilesystem(cacheFile.getAbsolutePath(), _maxSize);

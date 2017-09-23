@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeConfig;
 import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.util.AppCast;
@@ -136,10 +137,12 @@ public class AssetUpdater {
 
         private Context _context;
         private AppSettings _appSettings;
+        private String[] _tagKeys;
 
         public LoadAssetsThread(Context context) {
             _context = context.getApplicationContext();
             _appSettings = AppSettings.get();
+            _tagKeys = context.getResources().getStringArray(R.array.meme_tags__keys);
         }
 
         @Override
@@ -163,6 +166,7 @@ public class AssetUpdater {
                 loadBundledAssets(fonts, images);
                 loadConfigFromFolder(getBundledAssetsDir(_appSettings), fonts, images);
             }
+            MemeData.clearImagesWithTags();
             _isAlreadyLoading = false;
             AppCast.ASSETS_LOADED.send(_context);
         }
@@ -198,7 +202,7 @@ public class AssetUpdater {
 
             for (MemeConfig.Font confFont : conf.getFonts()) {
                 MemeData.Font dataFont = new MemeData.Font();
-                dataFont.font = confFont;
+                dataFont.data = confFont;
                 dataFont.fullPath = new File(folder, confFont.getFilename());
                 if (dataFont.fullPath.exists()) {
                     dataFonts.add(dataFont);
@@ -209,7 +213,7 @@ public class AssetUpdater {
 
             for (MemeConfig.Image confImage : conf.getImages()) {
                 MemeData.Image dataImage = new MemeData.Image();
-                dataImage.image = confImage;
+                dataImage.data = confImage;
                 dataImage.fullPath = new File(folder, confImage.getFilename());
                 dataImage.isTemplate = true;
                 if (dataImage.fullPath.exists()) {
@@ -296,7 +300,20 @@ public class AssetUpdater {
 
         private MemeConfig.Image generateImageEntry(File folder, String filename) {
             ArrayList<String> tags = new ArrayList<>();
-            tags.add(MemeConfig.Image.IMAGE_TAG_CUSTOM);
+
+            // animals__advice_mallard.jpg --> tag animals recognized
+            String[] nameSplits = filename.split("__");
+            for (String tagKey : _tagKeys) {
+                for (String nameSplit : nameSplits) {
+                    if (nameSplit.equals(tagKey)) {
+                        tags.add(tagKey);
+                    }
+                }
+            }
+
+            if (tags.isEmpty()) {
+                tags.add(MemeConfig.Image.IMAGE_TAG_OTHER);
+            }
 
             MemeConfig.Image confImage = new MemeConfig.Image();
             confImage.setImageTexts(new ArrayList<MemeConfig.ImageText>());

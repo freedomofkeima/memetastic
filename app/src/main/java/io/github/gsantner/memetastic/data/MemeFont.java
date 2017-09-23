@@ -5,7 +5,7 @@ import android.graphics.Typeface;
 import java.io.File;
 
 /**
- * Contains the path and the name of a font
+ * Contains the path and the name of a data
  */
 public class MemeFont {
     private final String filePath;
@@ -13,10 +13,10 @@ public class MemeFont {
     private Typeface font;
 
     /**
-     * Constructor that takes and saves the filepath to the font and the font itself
+     * Constructor that takes and saves the filepath to the data and the data itself
      *
-     * @param filePath path where the font is saved
-     * @param font     the platform specific font type for the font at the path
+     * @param filePath path where the data is saved
+     * @param font     the platform specific data type for the data at the path
      */
     public MemeFont(String filePath, Typeface font) {
         this.font = font;
