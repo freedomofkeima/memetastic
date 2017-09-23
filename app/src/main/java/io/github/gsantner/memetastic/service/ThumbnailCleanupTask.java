@@ -15,7 +15,7 @@ public class ThumbnailCleanupTask extends Thread implements FilenameFilter {
     private String strres_dotThumbnails;
 
     public ThumbnailCleanupTask(Context context) {
-        strres_dotThumbnails = context.getString(R.string.dot_thumbnails);
+        strres_dotThumbnails = context.getString(R.string.pref_key__language);
     }
 
     public void run() {

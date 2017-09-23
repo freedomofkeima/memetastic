@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.view.View;
 
+import java.io.File;
+
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 
@@ -23,7 +25,7 @@ public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
         return scaleBitmap(bitmap, 300);
     }
 
-    public Bitmap loadImageFromFilesystem(String imagePath) {
+    public Bitmap loadImageFromFilesystem(File imagePath) {
         return loadImageFromFilesystem(imagePath, MemeLibConfig.MEME_FULLSCREEN_MAX_IMAGESIZE);
     }
 
@@ -56,11 +58,11 @@ public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
     }
 
     /**
-     * Calculates the scaling factor to convert data size to size in pixels
+     * Calculates the scaling factor to convert conf size to size in pixels
      *
      * @param w width of the bitmap where a text should be written on
      * @param h height of the bitmap where a text should be written on
-     * @return the size of the data in pixels
+     * @return the size of the conf in pixels
      */
     public float getScalingFactorInPixelsForWritingOnPicture(int w, int h) {
         final float fontScaler = (float) 133;

@@ -38,13 +38,13 @@ public class ImageLoaderTask<T> extends AsyncTask<File, Void, Bitmap> {
         Bitmap bitmap;
         if (_loadThumbnail) {
             if (cacheFile.exists()) {
-                bitmap = cu.loadImageFromFilesystem(cacheFile.getAbsolutePath(), _maxSize);
+                bitmap = cu.loadImageFromFilesystem(cacheFile, _maxSize);
             } else {
-                bitmap = cu.loadImageFromFilesystem(pathToImage.getAbsolutePath(), _maxSize);
+                bitmap = cu.loadImageFromFilesystem(pathToImage, _maxSize);
                 cu.writeImageToFileDetectFormat(cacheFile, bitmap, 80);
             }
         } else {
-            bitmap = cu.loadImageFromFilesystem(pathToImage.getAbsolutePath(), _maxSize);
+            bitmap = cu.loadImageFromFilesystem(pathToImage, _maxSize);
         }
 
         return bitmap;

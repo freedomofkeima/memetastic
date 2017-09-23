@@ -214,7 +214,7 @@ public class AssetUpdater {
 
             for (MemeConfig.Font confFont : conf.getFonts()) {
                 MemeData.Font dataFont = new MemeData.Font();
-                dataFont.data = confFont;
+                dataFont.conf = confFont;
                 dataFont.fullPath = new File(folder, confFont.getFilename());
                 dataFont.typeFace = Typeface.createFromFile(dataFont.fullPath);
                 if (dataFont.fullPath.exists()) {
@@ -226,7 +226,7 @@ public class AssetUpdater {
 
             for (MemeConfig.Image confImage : conf.getImages()) {
                 MemeData.Image dataImage = new MemeData.Image();
-                dataImage.data = confImage;
+                dataImage.conf = confImage;
                 dataImage.fullPath = new File(folder, confImage.getFilename());
                 dataImage.isTemplate = true;
                 if (dataImage.fullPath.exists()) {

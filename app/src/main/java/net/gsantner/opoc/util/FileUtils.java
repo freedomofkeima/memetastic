@@ -123,7 +123,7 @@ public class FileUtils {
         return buf;
     }
 
-    // Read binary stream (of unknown data size)
+    // Read binary stream (of unknown conf size)
     public static byte[] readCloseBinaryStream(final InputStream stream) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
@@ -263,7 +263,7 @@ public class FileUtils {
         return ext != null ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) : null;
     }
 
-    // Example: Check if this is maybe a data: (str, "jpg", "png", "jpeg")
+    // Example: Check if this is maybe a conf: (str, "jpg", "png", "jpeg")
     public static boolean hasExtension(String str, String... extensions) {
         String lc = str.toLowerCase();
         for (String extension : extensions) {

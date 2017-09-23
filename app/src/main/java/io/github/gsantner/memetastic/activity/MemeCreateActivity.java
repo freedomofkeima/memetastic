@@ -13,7 +13,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
@@ -53,10 +52,12 @@ import butterknife.OnTextChanged;
 import butterknife.OnTouch;
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.R;
+import io.github.gsantner.memetastic.data.MemeConfig;
 import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.data.MemeSetting;
 import io.github.gsantner.memetastic.data.MemeSettingBase;
+import io.github.gsantner.memetastic.service.AssetUpdater;
 import io.github.gsantner.memetastic.ui.FontAdapter;
 import io.github.gsantner.memetastic.util.ActivityUtils;
 import io.github.gsantner.memetastic.util.AndroidBug5497Workaround;
@@ -123,11 +124,11 @@ public class MemeCreateActivity extends AppCompatActivity
             AndroidBug5497Workaround.assistActivity(this);
         }
 
-        // Quit activity if no data was given
+        // Quit activity if no conf was given
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-        if (!(Intent.ACTION_SEND.equals(action) && type.startsWith("data/")) &&
+        if (!(Intent.ACTION_SEND.equals(action) && type.startsWith("conf/")) &&
                 (!getIntent().hasExtra(EXTRA_IMAGE_PATH) || !getIntent().hasExtra(ASSET_IMAGE))) {
             finish();
             return;
@@ -237,7 +238,7 @@ public class MemeCreateActivity extends AppCompatActivity
         Bitmap bitmap = null;
         String imagePath = getIntent().getStringExtra(EXTRA_IMAGE_PATH);
         App.log("imagepath::" + imagePath);
-        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().startsWith("data/")) {
+        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().startsWith("conf/")) {
             Uri imageURI = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             if (imageURI != null) {
                 try {
@@ -357,15 +358,14 @@ public class MemeCreateActivity extends AppCompatActivity
     }
 
     private boolean saveMemeToFilesystem(boolean showDialog) {
-        String filepath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getString(R.string.app_name)).getAbsolutePath();
-        String thumbnailPath = new File(filepath, getString(R.string.dot_thumbnails)).getAbsolutePath();
+        File folder = AssetUpdater.getMemesDir(AppSettings.get());
         if (memeSavetime < 0) {
             memeSavetime = System.currentTimeMillis();
         }
 
         String filename = String.format(Locale.getDefault(), "%s_%d.jpg", getString(R.string.app_name), memeSavetime);
-        File file = new File(filepath, filename);
-        boolean wasSaved = ContextUtils.get().writeImageToFileJpeg(file, lastBitmap) != null;
+        File fullpath = new File(folder, filename);
+        boolean wasSaved = ContextUtils.get().writeImageToFileJpeg(fullpath, lastBitmap) != null;
         if (wasSaved && showDialog) {
 
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -384,6 +384,14 @@ public class MemeCreateActivity extends AppCompatActivity
                     });
             dialog.show();
         }
+        if (wasSaved) {
+            MemeConfig.Image confImage = AssetUpdater.generateImageEntry(folder, filename, new String[0]);
+            MemeData.Image dataImage = new MemeData.Image();
+            dataImage.conf = confImage;
+            dataImage.fullPath = fullpath;
+            dataImage.isTemplate = false;
+            MemeData.getCreatedMemes().add(dataImage);
+        }
         return wasSaved;
     }
 
@@ -396,7 +404,7 @@ public class MemeCreateActivity extends AppCompatActivity
         textEditTopCaption.setVisibility(moarControlsContainerVisible ? View.GONE : View.VISIBLE);
         toolbar.setVisibility(moarControlsContainerVisible ? View.GONE : View.VISIBLE);
 
-        // higher weightRatio means the data is more wide, so below view can be higher
+        // higher weightRatio means the conf is more wide, so below view can be higher
         // 100 is the max weight, 55 means the below view is a little more weighted
         Bitmap curImg = memeSetting.getImageMain().getDisplayImage();
         int weight = (int) (55f * (1 + ((curImg.getWidth() / (float) curImg.getHeight()) / 10f)));

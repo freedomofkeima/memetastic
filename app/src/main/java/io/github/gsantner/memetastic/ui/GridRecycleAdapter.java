@@ -49,19 +49,24 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
     // sets up the view of the item at the position in the grid
     @Override
     public void onBindViewHolder(final ViewHolder holder, int pos) {
-        final int position = pos;
+        final MemeData.Image imageData = _imageDataList.get(pos);
+        if (imageData == null || imageData.fullPath == null || !imageData.fullPath.exists()) {
+            holder.imageView.setImageResource(R.drawable.ic_mood_bad_black_256dp);
+            holder.imageButtonFav.setVisibility(View.INVISIBLE);
+            return;
+        }
         holder.imageButtonFav.setVisibility(View.INVISIBLE);
         holder.imageView.setVisibility(View.INVISIBLE);
         ImageLoaderTask<ViewHolder> taskLoadImage = new ImageLoaderTask<>(this, _activity, true, holder);
-        taskLoadImage.execute(_imageDataList.get(pos).fullPath);
-        holder.imageView.setTag(_imageDataList.get(position));
-        holder.imageButtonFav.setTag(_imageDataList.get(position));
+        taskLoadImage.execute(imageData.fullPath);
+        holder.imageView.setTag(imageData);
+        holder.imageButtonFav.setTag(imageData);
 
-        tintFavouriteImage(holder.imageButtonFav, _app.settings.isFavorite(_imageDataList.get(pos).fullPath.toString()));
+        tintFavouriteImage(holder.imageButtonFav, _app.settings.isFavorite(imageData.fullPath.toString()));
 
         holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
             public boolean onLongClick(View v) {
-                //onImageLongClicked(position, holder.imageButtonFav, _imageDataList);
+                //onImageLongClicked(pos, holder.imageButtonFav, _imageDataList);
                 return true;
             }
         });
@@ -154,7 +159,7 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
     }
 
 
-    // contains the data view for the meme and the favorite button to access them
+    // contains the conf view for the meme and the favorite button to access them
     public class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.item__square_image__image)
         public ImageView imageView;
@@ -162,7 +167,7 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
         @BindView(R.id.item__square_image__image_bottom_end)
         public ImageView imageButtonFav;
 
-        // saves the instance of the data view of the meme and favorite button to access them later
+        // saves the instance of the conf view of the meme and favorite button to access them later
         public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);

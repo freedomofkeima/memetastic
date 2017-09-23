@@ -41,6 +41,11 @@ public class MemeData implements Serializable {
                 return img;
             }
         }
+        for (Image img : _createdMemes) {
+            if (img.fullPath.equals(filePath)) {
+                return img;
+            }
+        }
         return null;
     }
 
@@ -60,13 +65,13 @@ public class MemeData implements Serializable {
         boolean isOtherTag = tag.equals("other");
         List<Image> newlist = new ArrayList<>();
         for (Image image : getImages()) {
-            for (String imgTag : image.data.getTags()) {
+            for (String imgTag : image.conf.getTags()) {
                 if (imgTag.equals(tag)) {
                     newlist.add(image);
                     break;
                 }
             }
-            if (isOtherTag && image.data.getTags().isEmpty()) {
+            if (isOtherTag && image.conf.getTags().isEmpty()) {
                 newlist.add(image);
             }
         }
@@ -75,13 +80,13 @@ public class MemeData implements Serializable {
     }
 
     public static class Font {
-        public MemeConfig.Font data;
+        public MemeConfig.Font conf;
         public File fullPath;
         public Typeface typeFace;
     }
 
     public static class Image {
-        public MemeConfig.Image data;
+        public MemeConfig.Image conf;
         public File fullPath;
         public boolean isTemplate;
     }

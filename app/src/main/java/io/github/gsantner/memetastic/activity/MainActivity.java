@@ -373,7 +373,7 @@ public class MainActivity extends AppCompatActivity
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try {
-                // Create an data file name
+                // Create an conf file name
                 String imageFileName = getString(R.string.app_name) + "_" + System.currentTimeMillis();
                 File storageDir = new File(Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DCIM), "Camera");

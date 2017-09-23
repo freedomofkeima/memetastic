@@ -371,13 +371,13 @@ public class ContextUtils {
         return bitmap;
     }
 
-    public Bitmap loadImageFromFilesystem(String imagePath, int maxDimen) {
+    public Bitmap loadImageFromFilesystem(File imagePath, int maxDimen) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(imagePath, options);
+        BitmapFactory.decodeFile(imagePath.getAbsolutePath(), options);
         options.inSampleSize = calculateInSampleSize(options, maxDimen);
         options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(imagePath, options);
+        return BitmapFactory.decodeFile(imagePath.getAbsolutePath(), options);
     }
 
     /**
@@ -388,7 +388,7 @@ public class ContextUtils {
      * @return the scaling factor that needs to be applied to the bitmap
      */
     public int calculateInSampleSize(BitmapFactory.Options options, int maxDimen) {
-        // Raw height and width of data
+        // Raw height and width of conf
         int height = options.outHeight;
         int width = options.outWidth;
         int inSampleSize = 1;
@@ -429,7 +429,7 @@ public class ContextUtils {
         if (folder.exists() || folder.mkdirs()) {
             FileOutputStream stream = null;
             try {
-                stream = new FileOutputStream(imageFile); // overwrites this data every time
+                stream = new FileOutputStream(imageFile); // overwrites this conf every time
                 image.compress(format, quality, stream);
                 return imageFile;
             } catch (FileNotFoundException ignored) {
