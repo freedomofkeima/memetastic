@@ -89,6 +89,7 @@ public class AssetUpdater {
                     String lastUpdate = apiJson.getString("pushed_at");
                     Date date = FORMAT_RFC3339.parse(lastUpdate);
                     if (date.after(_appSettings.getLastAssetArchiveDate())) {
+                        _appSettings.setLastArchiveCheckDate(new Date(System.currentTimeMillis()));
                         if (!_doDownload) {
                             AppCast.DOWNLOAD_REQUEST_RESULT.send(_context, DOWNLOAD_REQUEST_RESULT__DO_DOWNLOAD_ASK);
                             return;
@@ -122,18 +123,18 @@ public class AssetUpdater {
                 file = new File(file, FORMAT_RFC3339.format(date) + ".memetastic.zip");
                 ok = NetworkUtils.downloadFile(URL_ARCHIVE_ZIP, file, new Callback<Float>() {
                     public void onCallback(Float aFloat) {
-                        if (_lastPercent != (int)(aFloat*100)) {
+                        if (_lastPercent != (int) (aFloat * 100)) {
                             AppCast.DOWNLOAD_STATUS.send(_context, DOWNLOAD_STATUS__DOWNLOADING, _lastPercent * 3 / 4);
-                            _lastPercent = (int)(aFloat*100);
+                            _lastPercent = (int) (aFloat * 100);
                         }
                     }
                 });
                 if (ok) {
                     ok = ZipUtils.unzip(file, templatesDir, true, new Callback<Float>() {
                         public void onCallback(Float aFloat) {
-                            if (_lastPercent != (int)(aFloat*100)) {
+                            if (_lastPercent != (int) (aFloat * 100)) {
                                 AppCast.DOWNLOAD_STATUS.send(_context, DOWNLOAD_STATUS__UNZIPPING, 50 + _lastPercent / 4);
-                                _lastPercent = (int)(aFloat*100);
+                                _lastPercent = (int) (aFloat * 100);
                             }
                         }
                     });

@@ -2,6 +2,7 @@ package io.github.gsantner.memetastic.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
@@ -23,6 +24,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -182,9 +184,11 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        PermissionChecker.doIfPermissionGranted(this);
-        new AssetUpdater.UpdateThread(this, true).start();
         new AssetUpdater.LoadAssetsThread(this).start();
+
+        if (PermissionChecker.doIfPermissionGranted(this)) {
+            ContextUtils.checkForAssetUpdates(this);
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -246,7 +250,10 @@ public class MainActivity extends AppCompatActivity
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        PermissionChecker.checkPermissionResult(this, requestCode, permissions, grantResults);
+        if (PermissionChecker.checkPermissionResult(this, requestCode, permissions, grantResults)) {
+            ContextUtils.checkForAssetUpdates(this);
+        }
+        selectTab(_tabLayout.getSelectedTabPosition(), _currentMainMode);
     }
 
     @Override
@@ -292,8 +299,10 @@ public class MainActivity extends AppCompatActivity
                 return true;
             }
             case R.id.action_picture_from_gallery: {
-                Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                ActivityUtils.get(this).animateToActivity(i, false, REQUEST_LOAD_GALLERY_IMAGE);
+                if (PermissionChecker.doIfPermissionGranted(this)) {
+                    Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    ActivityUtils.get(this).animateToActivity(i, false, REQUEST_LOAD_GALLERY_IMAGE);
+                }
                 return true;
             }
             case R.id.action_picture_from_camera: {
@@ -391,11 +400,14 @@ public class MainActivity extends AppCompatActivity
      * Source: http://developer.android.com/training/camera/photobasics.html
      */
     public void showCameraDialog() {
+        if (!PermissionChecker.doIfPermissionGranted(this)) {
+            return;
+        }
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             try {
-                // Create an conf file name
+                // Create an image file name
                 String imageFileName = getString(R.string.app_name) + "_" + System.currentTimeMillis();
                 File storageDir = new File(Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DCIM), "Camera");
@@ -484,6 +496,17 @@ public class MainActivity extends AppCompatActivity
             String action = intent.getAction();
             switch (action) {
                 case AppCast.DOWNLOAD_REQUEST_RESULT.ACTION: {
+                    switch (intent.getIntExtra(AppCast.DOWNLOAD_REQUEST_RESULT.EXTRA_RESULT, AssetUpdater.UpdateThread.DOWNLOAD_REQUEST_RESULT__FAILED)) {
+                        case AssetUpdater.UpdateThread.DOWNLOAD_REQUEST_RESULT__FAILED: {
+                            updateInfoBar(0, R.string.downloading_failed, R.drawable.ic_file_download_white_32dp, 1000);
+                            break;
+                        }
+                        case AssetUpdater.UpdateThread.DOWNLOAD_REQUEST_RESULT__DO_DOWNLOAD_ASK: {
+                            updateInfoBar(0, R.string.downloading, R.drawable.ic_file_download_white_32dp, 1);
+                            showDownloadDialog();
+                            break;
+                        }
+                    }
                     return;
                 }
                 case AppCast.DOWNLOAD_STATUS.ACTION: {
@@ -516,7 +539,22 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    private void showDownloadDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.download_latest_assets_title)
+                .setMessage(R.string.download_latest_assets_message)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        new AssetUpdater.UpdateThread(MainActivity.this, true).start();
+                    }
+                });
+        dialog.show();
+    }
+
     public void updateInfoBar(Integer percent, @StringRes Integer textResId, @DrawableRes Integer image, int hideInMillis) {
+        _infoBar.setVisibility(View.VISIBLE);
         if (hideInMillis >= 0) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -525,8 +563,6 @@ public class MainActivity extends AppCompatActivity
                     _infoBar.setVisibility(View.GONE);
                 }
             }, hideInMillis);
-        } else {
-            _infoBar.setVisibility(View.VISIBLE);
         }
         if (percent != null) {
             _infoBarProgressBar.setProgress(percent);

@@ -185,8 +185,12 @@ public class AppSettings extends AppSettingsBase {
 
     public boolean isAppCurrentVersionFirstStart() {
         int value = getInt(R.string.pref_key__app_first_start_current_version, -1);
+        boolean isFirstStart = value != BuildConfig.VERSION_CODE && !BuildConfig.IS_TEST_BUILD;
         setInt(R.string.pref_key__app_first_start_current_version, BuildConfig.VERSION_CODE);
-        return value != BuildConfig.VERSION_CODE && !BuildConfig.IS_TEST_BUILD;
+        if (isFirstStart) {
+            setLastArchiveCheckDate(new Date(0));
+        }
+        return isFirstStart;
     }
 
     public boolean isAutoSaveMeme() {
@@ -235,6 +239,22 @@ public class AppSettings extends AppSettingsBase {
             return new Date(0);
         }
         return AssetUpdater.FORMAT_RFC3339.parse(date);
+    }
+
+    public void setLastArchiveCheckDate(Date value) {
+        setString(R.string.pref_key__last_asset_archive_check_date, AssetUpdater.FORMAT_RFC3339.format(value));
+    }
+
+    public Date getLastAssetArchiveCheckDate() {
+        String date = getString(R.string.pref_key__last_asset_archive_check_date, "");
+        if (date.isEmpty()) {
+            return new Date(0);
+        }
+        try {
+            return AssetUpdater.FORMAT_RFC3339.parse(date);
+        } catch (ParseException e) {
+            return new Date(0);
+        }
     }
 
     public void setLastArchiveDate(Date value) {

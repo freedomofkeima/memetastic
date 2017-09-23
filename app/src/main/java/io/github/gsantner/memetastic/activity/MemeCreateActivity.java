@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -63,6 +64,7 @@ import io.github.gsantner.memetastic.util.ActivityUtils;
 import io.github.gsantner.memetastic.util.AndroidBug5497Workaround;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
+import io.github.gsantner.memetastic.util.PermissionChecker;
 import uz.shift.colorpicker.LineColorPicker;
 
 /**
@@ -128,7 +130,7 @@ public class MemeCreateActivity extends AppCompatActivity
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-        if (!(Intent.ACTION_SEND.equals(action) && type.startsWith("conf/")) &&
+        if (!(Intent.ACTION_SEND.equals(action) && type.startsWith("image/")) &&
                 (!getIntent().hasExtra(EXTRA_IMAGE_PATH) || !getIntent().hasExtra(ASSET_IMAGE))) {
             finish();
             return;
@@ -183,6 +185,9 @@ public class MemeCreateActivity extends AppCompatActivity
     }
 
     private void prepareForSaving() {
+        if (memeSetting == null) {
+            return;
+        }
         memeSetting.setMemeSettingChangedListener(null);
         imageEditView.setImageBitmap(null);
         if (lastBitmap != null && !lastBitmap.isRecycled())
@@ -238,7 +243,7 @@ public class MemeCreateActivity extends AppCompatActivity
         Bitmap bitmap = null;
         String imagePath = getIntent().getStringExtra(EXTRA_IMAGE_PATH);
         App.log("imagepath::" + imagePath);
-        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().startsWith("conf/")) {
+        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().startsWith("image/")) {
             Uri imageURI = intent.getParcelableExtra(Intent.EXTRA_STREAM);
             if (imageURI != null) {
                 try {
@@ -358,6 +363,10 @@ public class MemeCreateActivity extends AppCompatActivity
     }
 
     private boolean saveMemeToFilesystem(boolean showDialog) {
+        if (!PermissionChecker.doIfPermissionGranted(this)) {
+            return false;
+        }
+
         File folder = AssetUpdater.getMemesDir(AppSettings.get());
         if (memeSavetime < 0) {
             memeSavetime = System.currentTimeMillis();
@@ -393,6 +402,11 @@ public class MemeCreateActivity extends AppCompatActivity
             MemeData.getCreatedMemes().add(dataImage);
         }
         return wasSaved;
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        PermissionChecker.checkPermissionResult(this, requestCode, permissions, grantResults);
     }
 
     public void toggleMoarControls(boolean forceVisibile, boolean visible) {

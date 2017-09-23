@@ -6,9 +6,11 @@ import android.os.Build;
 import android.view.View;
 
 import java.io.File;
+import java.util.Date;
 
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
+import io.github.gsantner.memetastic.service.AssetUpdater;
 
 public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
     public ContextUtils(Context context) {
@@ -18,6 +20,13 @@ public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
 
     public static ContextUtils get() {
         return new ContextUtils(App.get());
+    }
+
+    public static void checkForAssetUpdates(Context context) {
+        Date fiveDaysAgo = new Date(System.currentTimeMillis() - 5 * 1000 * 60 * 60 * 24);
+        if (AppSettings.get().getLastAssetArchiveCheckDate().before(fiveDaysAgo)) {
+            new AssetUpdater.UpdateThread(context, false).start();
+        }
     }
 
 
