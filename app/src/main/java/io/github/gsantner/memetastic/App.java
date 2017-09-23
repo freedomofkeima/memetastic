@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.gsantner.memetastic.data.MemeCategory;
 import io.github.gsantner.memetastic.data.MemeFont;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.util.AppSettings;
@@ -26,7 +25,6 @@ import io.github.gsantner.memetastic.util.ContextUtils;
 public class App extends Application {
     private volatile static App app;
     public AppSettings settings;
-    List<MemeCategory> memeCategories;
     List<MemeFont> fonts;
 
     public static App get() {
@@ -40,7 +38,6 @@ public class App extends Application {
 
         settings = AppSettings.get();
         loadFonts();
-        loadMemeNames();
 
         if (settings.isAppFirstStart(false)) {
             // Set default values (calculated in getters)
@@ -63,22 +60,6 @@ public class App extends Application {
         } catch (IOException e) {
             log("Could not load fonts");
             fonts = new ArrayList<>();
-        }
-    }
-
-    public void loadMemeNames() {
-        String IMAGE_FOLDER = MemeLibConfig.getPath(MemeLibConfig.Assets.MEMES, false);
-        try {
-            String[] memeCategories = getAssets().list(IMAGE_FOLDER);
-            IMAGE_FOLDER = MemeLibConfig.getPath(IMAGE_FOLDER, true);
-            this.memeCategories = new ArrayList<MemeCategory>();
-
-            for (String memeCat : memeCategories) {
-                this.memeCategories.add(new MemeCategory(memeCat, getAssets().list(IMAGE_FOLDER + memeCat)).orderByNameCaseInsensitive());
-            }
-        } catch (IOException e) {
-            log("Could not load images");
-            memeCategories = new ArrayList<MemeCategory>();
         }
     }
 

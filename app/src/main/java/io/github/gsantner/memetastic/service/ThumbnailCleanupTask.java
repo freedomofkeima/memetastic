@@ -1,17 +1,14 @@
 package io.github.gsantner.memetastic.service;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import io.github.gsantner.memetastic.R;
-import io.github.gsantner.memetastic.data.MemeOriginStorage;
 import io.github.gsantner.memetastic.util.ContextUtils;
 
 public class ThumbnailCleanupTask extends Thread implements FilenameFilter {

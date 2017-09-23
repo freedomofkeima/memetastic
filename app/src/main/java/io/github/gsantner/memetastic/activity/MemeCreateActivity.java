@@ -58,10 +58,10 @@ import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.data.MemeSetting;
 import io.github.gsantner.memetastic.data.MemeSettingBase;
 import io.github.gsantner.memetastic.ui.FontAdapter;
+import io.github.gsantner.memetastic.util.ActivityUtils;
 import io.github.gsantner.memetastic.util.AndroidBug5497Workaround;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
-import io.github.gsantner.memetastic.util.ActivityUtils;
 import uz.shift.colorpicker.LineColorPicker;
 
 /**

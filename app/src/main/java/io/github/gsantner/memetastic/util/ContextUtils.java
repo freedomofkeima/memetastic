@@ -2,23 +2,10 @@ package io.github.gsantner.memetastic.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.os.Build;
-import android.os.Environment;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
-import android.widget.ImageView;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import io.github.gsantner.memetastic.App;
-import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 
 public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {

@@ -47,7 +47,6 @@ import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeData;
-import io.github.gsantner.memetastic.data.MemeOriginInterface;
 import io.github.gsantner.memetastic.service.AssetUpdater;
 import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 import io.github.gsantner.memetastic.ui.GridDecoration;
@@ -239,7 +238,6 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public boolean handleBarClick(MenuItem item) {
-        MemeOriginInterface memeOriginObject = null;
         List<MemeData.Image> imageList = null;
 
         switch (item.getItemId()) {

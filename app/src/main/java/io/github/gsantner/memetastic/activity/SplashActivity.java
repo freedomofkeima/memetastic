@@ -8,14 +8,10 @@ import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ImageView;
 import android.widget.Toast;
-
-import java.io.File;
 
 import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
-import io.github.gsantner.memetastic.util.ContextUtils;
 import io.github.gsantner.memetastic.util.ActivityUtils;
 
 public class SplashActivity extends AppCompatActivity {
@@ -71,7 +67,7 @@ public class SplashActivity extends AppCompatActivity {
         // Create MemeCreator directories
         int delay = (skipDelay || BuildConfig.DEBUG) ? 1000 : getResources().getInteger(R.integer.splash_delay);
         //new File(ContextUtils.get().getPicturesMemetasticFolder(), getString(R.string.dot_thumbnails)).mkdirs();
-       // new File(ContextUtils.get().getPicturesMemetasticTemplatesCustomFolder(), getString(R.string.dot_thumbnails)).mkdirs();
+        // new File(ContextUtils.get().getPicturesMemetasticTemplatesCustomFolder(), getString(R.string.dot_thumbnails)).mkdirs();
 
 
         // Start activity and exit splash
