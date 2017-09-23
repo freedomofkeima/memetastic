@@ -260,4 +260,12 @@ public class AppSettings extends AppSettingsBase {
     public void setLastArchiveDate(Date value) {
         setString(R.string.pref_key__last_asset_archive_date, AssetUpdater.FORMAT_RFC3339.format(value));
     }
+
+    public boolean isMigrated() {
+        return getBool(R.string.pref_key__is_migrated, false);
+    }
+
+    public void setMigrated(boolean value) {
+        setBool(R.string.pref_key__is_migrated, value);
+    }
 }

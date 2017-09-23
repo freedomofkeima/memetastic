@@ -70,4 +70,6 @@
     <string name="pref_key__save_directory" translatable="false">pref_key__save_directory</string>
     <string name="pref_key__last_asset_archive_date" translatable="false">pref_key__last_asset_archive_date</string>
     <string name="pref_key__last_asset_archive_check_date" translatable="false">pref_key__last_asset_archive_check_date</string>
+    <string name="pref_key__is_migrated" translatable="false">pref_key__is_migrated</string>
+    <string name="pref_key__download_assets_try" translatable="false">pref_key__download_assets_try</string>
 </resources>

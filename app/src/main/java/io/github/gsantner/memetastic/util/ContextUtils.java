@@ -11,6 +11,7 @@ import java.util.Date;
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.service.AssetUpdater;
+import io.github.gsantner.memetastic.service.MigrationThread;
 
 public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
     public ContextUtils(Context context) {
@@ -23,6 +24,7 @@ public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
     }
 
     public static void checkForAssetUpdates(Context context) {
+        new MigrationThread(context).start();
         Date fiveDaysAgo = new Date(System.currentTimeMillis() - 5 * 1000 * 60 * 60 * 24);
         if (AppSettings.get().getLastAssetArchiveCheckDate().before(fiveDaysAgo)) {
             new AssetUpdater.UpdateThread(context, false).start();

@@ -5,6 +5,8 @@ import android.graphics.Typeface;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,6 +30,12 @@ public class MemeData implements Serializable {
         for (Image image : _createdMemes) {
             image.isTemplate = false;
         }
+        Collections.sort(_createdMemes, new Comparator<Image>() {
+            @Override
+            public int compare(Image mine, Image other) {
+                return other.fullPath.compareTo(mine.fullPath);
+            }
+        });
         return _createdMemes;
     }
 
