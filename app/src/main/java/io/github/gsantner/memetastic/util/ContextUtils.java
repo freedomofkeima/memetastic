@@ -86,12 +86,4 @@ public class ContextUtils extends net.gsantner.opoc.util.ContextUtils {
 
         return (size + addl) / (fontScaler);
     }
-
-    public File getPicturesMemetasticFolder() {
-        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), _context.getString(R.string.app_name));
-    }
-
-    public File getPicturesMemetasticTemplatesCustomFolder() {
-        return new File(new File(getPicturesMemetasticFolder(), "templates"), "custom");
-    }
 }

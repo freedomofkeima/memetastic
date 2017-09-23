@@ -2,6 +2,7 @@ package io.github.gsantner.memetastic.util;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -13,13 +14,17 @@ import io.github.gsantner.memetastic.R;
 public class PermissionChecker {
 
     public static boolean doIfPermissionGranted(final Activity activity) {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (!hasExtStoragePerm(activity)) {
             ActivityCompat.requestPermissions(
                     activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 123
             );
             return false;
         }
         return true;
+    }
+
+    public static boolean hasExtStoragePerm(Context context) {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     public static boolean checkPermissionResult(final Activity activity, int requestCode, String[] permissions, int[] grantResults) {

@@ -99,43 +99,43 @@ public class AppSettings extends AppSettingsBase {
     }
 
     public void setFavoriteMemes(String[] value) {
-        setStringArray(R.string.pref_key__meme_favourites, value);
+        setStringArray(R.string.pref_key__favourite_meme_templates, value);
     }
 
-    public String[] getFavoriteMemes() {
-        return getStringArray(R.string.pref_key__meme_favourites);
+    public String[] getFavoriteMemeTemplates() {
+        return getStringArray(R.string.pref_key__favourite_meme_templates);
     }
 
-    public void appendFavoriteMeme(String meme) {
-        String[] memes = insertAndMaximize(getFavoriteMemes(), meme, MAX_FAVS);
+    public void appendFavoriteMeme(String filepath) {
+        String[] memes = insertAndMaximize(getFavoriteMemeTemplates(), filepath, MAX_FAVS);
         setFavoriteMemes(memes);
     }
 
-    public boolean isFavorite(String name) {
-        if (getFavoriteMemes() == null)
+    public boolean isFavorite(String filepath) {
+        if (getFavoriteMemeTemplates() == null)
             return false;
-        for (String s : getFavoriteMemes()) {
-            if (s.equalsIgnoreCase(name))
+        for (String s : getFavoriteMemeTemplates()) {
+            if (s.equals(filepath))
                 return true;
         }
         return false;
     }
 
-    public boolean toggleFavorite(String name) {
-        if (!isFavorite(name)) {
-            appendFavoriteMeme(name);
+    public boolean toggleFavorite(String filepath) {
+        if (!isFavorite(filepath)) {
+            appendFavoriteMeme(filepath);
             return true;
         }
-        removeFavorite(name);
+        removeFavorite(filepath);
         return false;
     }
 
-    public void removeFavorite(String name) {
-        String[] favs = getFavoriteMemes();
+    public void removeFavorite(String filepath) {
+        String[] favs = getFavoriteMemeTemplates();
         ArrayList<String> newFavs = new ArrayList<String>();
 
         for (String fav : favs) {
-            if (!fav.equalsIgnoreCase(name))
+            if (!fav.equals(filepath))
                 newFavs.add(fav);
         }
         setFavoriteMemes(newFavs.toArray(new String[newFavs.size()]));

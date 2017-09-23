@@ -24,14 +24,14 @@ public class ThumbnailCleanupTask extends Thread implements FilenameFilter {
     public void run() {
         ContextUtils cu = ContextUtils.get();
 
-        File picPath = cu.getPicturesMemetasticFolder();
+        /*File picPath = cu.getPicturesMemetasticFolder();
         File thumbPath = new File(picPath, strres_dotThumbnails);
         cleanupThumbnails(picPath, thumbPath);
 
 
         picPath = cu.getPicturesMemetasticTemplatesCustomFolder();
         thumbPath = new File(picPath, strres_dotThumbnails);
-        cleanupThumbnails(picPath, thumbPath);
+        cleanupThumbnails(picPath, thumbPath);*/
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

@@ -11,6 +11,7 @@ import java.util.List;
 public class MemeData implements Serializable {
     private static final List<Font> _fonts = new ArrayList<>();
     private static final List<Image> _images = new ArrayList<>();
+    private static final List<Image> _createdMemes = new ArrayList<>();
     private static final HashMap<String, List<Image>> _imagesWithTags = new HashMap<>();
 
     public static List<Font> getFonts() {
@@ -19,6 +20,13 @@ public class MemeData implements Serializable {
 
     public static List<Image> getImages() {
         return _images;
+    }
+
+    public static List<Image> getCreatedMemes() {
+        for (Image image : _createdMemes) {
+            image.isTemplate = false;
+        }
+        return _createdMemes;
     }
 
     public static void clearImagesWithTags() {

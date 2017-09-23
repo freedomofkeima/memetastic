@@ -47,9 +47,7 @@ import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeData;
-import io.github.gsantner.memetastic.data.MemeOriginFavorite;
 import io.github.gsantner.memetastic.data.MemeOriginInterface;
-import io.github.gsantner.memetastic.data.MemeOriginStorage;
 import io.github.gsantner.memetastic.service.AssetUpdater;
 import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 import io.github.gsantner.memetastic.ui.GridDecoration;
@@ -170,6 +168,7 @@ public class MainActivity extends AppCompatActivity
 
         PermissionChecker.doIfPermissionGranted(this);
         new AssetUpdater.UpdateThread(this, true).start();
+        new AssetUpdater.LoadAssetsThread(this).start();
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -241,7 +240,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public boolean handleBarClick(MenuItem item) {
         MemeOriginInterface memeOriginObject = null;
-        List<MemeData.Image> imageList = new ArrayList<>();
+        List<MemeData.Image> imageList = null;
 
         switch (item.getItemId()) {
             case R.id.action_about: {
@@ -289,8 +288,9 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case R.id.action_mode_favs: {
+                imageList = new ArrayList<>();
                 _emptylistText.setText(R.string.main__nodata__favourites);
-                for (String fav : app.settings.getFavoriteMemes()) {
+                for (String fav : app.settings.getFavoriteMemeTemplates()) {
                     MemeData.Image img = MemeData.findImage(new File(fav));
                     if (img != null) {
                         imageList.add(img);
@@ -301,9 +301,11 @@ public class MainActivity extends AppCompatActivity
             }
             case R.id.action_mode_saved: {
                 _emptylistText.setText(R.string.main__nodata__saved);
-                File filePath = ContextUtils.get().getPicturesMemetasticFolder();
-                filePath.mkdirs();
-                memeOriginObject = new MemeOriginStorage(filePath, getString(R.string.dot_thumbnails));
+                if (PermissionChecker.hasExtStoragePerm(this)) {
+                    File folder = AssetUpdater.getMemesDir(AppSettings.get());
+                    folder.mkdirs();
+                    imageList = MemeData.getCreatedMemes();
+                }
                 _toolbar.setTitle(R.string.main__mode__saved);
                 break;
             }
@@ -311,7 +313,7 @@ public class MainActivity extends AppCompatActivity
 
         // Change mode
         _tabLayout.setVisibility(item.getItemId() == R.id.action_mode_create ? View.VISIBLE : View.GONE);
-        if (memeOriginObject != null) {
+        if (imageList != null) {
             _drawer.closeDrawers();
             //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
             GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(imageList, this);

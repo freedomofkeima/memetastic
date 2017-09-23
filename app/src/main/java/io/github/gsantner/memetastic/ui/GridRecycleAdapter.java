@@ -13,28 +13,29 @@ import android.widget.ImageView;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.activity.MainActivity;
 import io.github.gsantner.memetastic.activity.MemeCreateActivity;
 import io.github.gsantner.memetastic.data.MemeData;
-import io.github.gsantner.memetastic.data.MemeOriginFavorite;
-import io.github.gsantner.memetastic.util.ContextUtils;
 import io.github.gsantner.memetastic.service.ImageLoaderTask;
+import io.github.gsantner.memetastic.util.ContextUtils;
 
 /**
  * Adapter to show images in a Grid
  */
 public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.ViewHolder> implements ImageLoaderTask.OnImageLoadedListener<GridRecycleAdapter.ViewHolder> {
-    private List<MemeData.Image> _memeObject;
+    private List<MemeData.Image> _imageDataList;
     private int _shortAnimationDuration;
     private Activity _activity;
     private App _app;
 
-    public GridRecycleAdapter(List<MemeData.Image> memeObject, Activity act) {
-        _memeObject = memeObject;
+    public GridRecycleAdapter(List<MemeData.Image> imageDataList, Activity activity) {
+        _imageDataList = imageDataList;
         _shortAnimationDuration = -1;
-        _activity = act;
+        _activity = activity;
         _app = (App) (_activity.getApplication());
     }
 
@@ -45,26 +46,6 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
         return vh;
     }
 
-    /**
-     * adds/removes a meme template to/from the favorites depending on if it's already a favorite or not
-     *
-     * @param positionInGrid the position of the meme in the grid that should be toggled
-     * @param imageButtonFav the ImageView of the clicked meme to toggle the favorite star
-     * @param memeObj        the memes of the grid where the clicked meme is saved in
-     */
-    private void toggleFavorite(int positionInGrid, ImageView imageButtonFav, MemeData.Image memeObj) {
-        if (_app.settings.toggleFavorite(memeObj.fullPath.getAbsolutePath())) {
-            tintFavourite(imageButtonFav, true);
-        } else {
-            if (_memeObject instanceof MemeOriginFavorite) {
-                ((MemeOriginFavorite) _memeObject).setFiles(_app.settings.getFavoriteMemes());
-                notifyDataSetChanged();
-            } else {
-                tintFavourite(imageButtonFav, false);
-            }
-        }
-    }
-
     // sets up the view of the item at the position in the grid
     @Override
     public void onBindViewHolder(final ViewHolder holder, int pos) {
@@ -72,14 +53,15 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
         holder.imageButtonFav.setVisibility(View.INVISIBLE);
         holder.imageView.setVisibility(View.INVISIBLE);
         ImageLoaderTask<ViewHolder> taskLoadImage = new ImageLoaderTask<>(this, _activity, true, holder);
-        taskLoadImage.execute(_memeObject.get(pos).fullPath);
-        holder.imageView.setTag(_memeObject.get(position));
+        taskLoadImage.execute(_imageDataList.get(pos).fullPath);
+        holder.imageView.setTag(_imageDataList.get(position));
+        holder.imageButtonFav.setTag(_imageDataList.get(position));
 
-        tintFavourite(holder.imageButtonFav, _app.settings.isFavorite(_memeObject.get(pos).fullPath.toString()));
+        tintFavouriteImage(holder.imageButtonFav, _app.settings.isFavorite(_imageDataList.get(pos).fullPath.toString()));
 
         holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
             public boolean onLongClick(View v) {
-                //onImageLongClicked(position, holder.imageButtonFav, _memeObject);
+                //onImageLongClicked(position, holder.imageButtonFav, _imageDataList);
                 return true;
             }
         });
@@ -88,7 +70,7 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
             public void onClick(View v) {
                 MemeData.Image image = (MemeData.Image) v.getTag();
                 if (image.isTemplate) {
-                    toggleFavorite(position, holder.imageButtonFav, image);
+                    toggleFavorite(holder);
                 }
             }
         });
@@ -112,21 +94,15 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
         });
     }
 
-    private void tintFavourite(ImageView iv, boolean isFav) {
-        ContextUtils.get().setDrawableWithColorToImageView(iv,
-                isFav ? R.drawable.ic_star_black_32dp : R.drawable.ic_star_border_black_32dp,
-                isFav ? R.color.comic_yellow : R.color.comic_blue);
-    }
-
     // gets and returns the count of available items in the grid
     @Override
     public int getItemCount() {
-        return _memeObject.size();
+        return _imageDataList.size();
     }
 
    /* public void onImageLongClicked(final int position, final ImageView iv, final MemeOriginInterface memeObj) {
         Context context = iv.getContext().getApplicationContext();
-        String pic = _memeObject.getFilepath(position);
+        String pic = _imageDataList.getFilepath(position);
         if (!pic.contains(context.getString(R.string.app_name))) {
             pic = pic.substring(pic.lastIndexOf("_") + 1);
             pic = pic.substring(0, pic.indexOf("."));
@@ -155,16 +131,41 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
         holder.imageView.setVisibility(View.VISIBLE);
     }
 
+    private void toggleFavorite(ViewHolder holder) {
+        MemeData.Image dataImage = (MemeData.Image) holder.imageView.getTag();
+        if (!dataImage.isTemplate) {
+            return;
+        }
+        if (_app.settings.toggleFavorite(dataImage.fullPath.getAbsolutePath())) {
+            tintFavouriteImage(holder.imageButtonFav, true);
+        } else {
+            tintFavouriteImage(holder.imageButtonFav, false);
+        }
+        int index = _imageDataList.indexOf(dataImage);
+        if (index >= 0) {
+            notifyItemChanged(index);
+        }
+    }
+
+    private void tintFavouriteImage(ImageView iv, boolean isFav) {
+        ContextUtils.setDrawableWithColorToImageView(iv,
+                isFav ? R.drawable.ic_star_black_32dp : R.drawable.ic_star_border_black_32dp,
+                isFav ? R.color.comic_yellow : R.color.comic_blue);
+    }
+
+
     // contains the data view for the meme and the favorite button to access them
     public class ViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.item__square_image__image)
         public ImageView imageView;
+
+        @BindView(R.id.item__square_image__image_bottom_end)
         public ImageView imageButtonFav;
 
         // saves the instance of the data view of the meme and favorite button to access them later
         public ViewHolder(View itemView) {
             super(itemView);
-            imageButtonFav = (ImageView) itemView.findViewById(R.id.item__square_image__image_bottom_end);
-            imageView = (ImageView) itemView.findViewById(R.id.item__square_image__image);
+            ButterKnife.bind(this, itemView);
             if (_shortAnimationDuration < 0)
                 _shortAnimationDuration = imageView.getContext().getResources().getInteger(
                         android.R.integer.config_shortAnimTime);

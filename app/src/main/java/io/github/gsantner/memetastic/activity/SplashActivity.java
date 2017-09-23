@@ -70,8 +70,8 @@ public class SplashActivity extends AppCompatActivity {
     private void startMemeCreator(boolean skipDelay) {
         // Create MemeCreator directories
         int delay = (skipDelay || BuildConfig.DEBUG) ? 1000 : getResources().getInteger(R.integer.splash_delay);
-        new File(ContextUtils.get().getPicturesMemetasticFolder(), getString(R.string.dot_thumbnails)).mkdirs();
-        new File(ContextUtils.get().getPicturesMemetasticTemplatesCustomFolder(), getString(R.string.dot_thumbnails)).mkdirs();
+        //new File(ContextUtils.get().getPicturesMemetasticFolder(), getString(R.string.dot_thumbnails)).mkdirs();
+       // new File(ContextUtils.get().getPicturesMemetasticTemplatesCustomFolder(), getString(R.string.dot_thumbnails)).mkdirs();
 
 
         // Start activity and exit splash
