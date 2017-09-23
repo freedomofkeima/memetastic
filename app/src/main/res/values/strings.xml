@@ -95,4 +95,8 @@
     <string name="error_cannot_create_save_dir">Error: Cannot create save directory</string>
     <string name="error_storage_permission">Need permission for storage to save memes and templates</string>
     <string name="main__memecat__other">Other</string>
+    <string name="downloading">Downloading</string>
+    <string name="downloading_failed">Downloading failed</string>
+    <string name="unzipping">Unzipping</string>
+    <string name="downloading_success">Sucessfully downloaded</string>
 </resources>

@@ -1,5 +1,7 @@
 package io.github.gsantner.memetastic.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
@@ -8,12 +10,16 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -27,6 +33,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -48,10 +55,10 @@ import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.service.AssetUpdater;
-import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 import io.github.gsantner.memetastic.ui.GridDecoration;
 import io.github.gsantner.memetastic.ui.GridRecycleAdapter;
 import io.github.gsantner.memetastic.util.ActivityUtils;
+import io.github.gsantner.memetastic.util.AppCast;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
 import io.github.gsantner.memetastic.util.PermissionChecker;
@@ -86,12 +93,22 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.main__activity__list_empty__text)
     TextView _emptylistText;
 
+    @BindView(R.id.main__activity__infobar)
+    LinearLayout _infoBar;
+
     @BindView(R.id.main__activity__infobar__progress)
-    ProgressBar _progressBar;
+    ProgressBar _infoBarProgressBar;
+
+    @BindView(R.id.main__activity__infobar__image)
+    ImageView _infoBarImage;
+
+    @BindView(R.id.main__activity__infobar__text)
+    TextView _infoBarText;
 
     App app;
     private String cameraPictureFilepath = "";
     String[] _tagKeys, _tagValues;
+    private int _currentMainMode = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +155,7 @@ public class MainActivity extends AppCompatActivity
         _areTabsReady = true;
         selectTab(app.settings.getLastSelectedTab(), app.settings.getDefaultMainMode());
 
-        _progressBar.getProgressDrawable().setColorFilter(ContextCompat.getColor(this, R.color.accent), PorterDuff.Mode.SRC_IN);
+        _infoBarProgressBar.getProgressDrawable().setColorFilter(ContextCompat.getColor(this, R.color.accent), PorterDuff.Mode.SRC_IN);
 
         //
         // Actions based on build type or version
@@ -195,10 +212,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onResume() {
+        super.onResume();
         if (_isShowingFullscreenImage) {
             _isShowingFullscreenImage = false;
             overridePendingTransition(R.anim.fadein, R.anim.fadeout);
         }
+        LocalBroadcastManager.getInstance(this).registerReceiver(_localBroadcastReceiver, AppCast.getLocalBroadcastFilter());
 
         if (SettingsActivity.activityRetVal == SettingsActivity.RESULT.CHANGE_RESTART) {
             SettingsActivity.activityRetVal = SettingsActivity.RESULT.NOCHANGE;
@@ -217,9 +236,12 @@ public class MainActivity extends AppCompatActivity
             }
         } catch (Exception ignored) {
         }
-        new ThumbnailCleanupTask(this).start();
+    }
 
-        super.onResume();
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(_localBroadcastReceiver);
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -453,6 +475,68 @@ public class MainActivity extends AppCompatActivity
             }
         }
         return super.dispatchTouchEvent(event);
+    }
+
+    private BroadcastReceiver _localBroadcastReceiver = new BroadcastReceiver() {
+        @SuppressWarnings("unchecked")
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+                case AppCast.DOWNLOAD_REQUEST_RESULT.ACTION: {
+                    return;
+                }
+                case AppCast.DOWNLOAD_STATUS.ACTION: {
+                    int percent = intent.getIntExtra(AppCast.DOWNLOAD_STATUS.EXTRA_PERCENT, 100);
+                    switch (intent.getIntExtra(AppCast.DOWNLOAD_STATUS.EXTRA_STATUS, AssetUpdater.UpdateThread.DOWNLOAD_STATUS__FAILED)) {
+                        case AssetUpdater.UpdateThread.DOWNLOAD_STATUS__DOWNLOADING: {
+                            updateInfoBar(percent, R.string.downloading, R.drawable.ic_file_download_white_32dp, -1);
+                            break;
+                        }
+                        case AssetUpdater.UpdateThread.DOWNLOAD_STATUS__FAILED: {
+                            updateInfoBar(percent, R.string.downloading_failed, R.drawable.ic_mood_bad_black_256dp, 2000);
+                            break;
+                        }
+                        case AssetUpdater.UpdateThread.DOWNLOAD_STATUS__UNZIPPING: {
+                            updateInfoBar(percent, R.string.unzipping, R.drawable.ic_file_download_white_32dp, -1);
+                            break;
+                        }
+                        case AssetUpdater.UpdateThread.DOWNLOAD_STATUS__FINISHED: {
+                            updateInfoBar(percent, R.string.downloading_success, R.drawable.ic_gavel_white_48px, 2000);
+                            break;
+                        }
+                    }
+                    return;
+                }
+                case AppCast.ASSETS_LOADED.ACTION: {
+                    selectTab(_tabLayout.getSelectedTabPosition(), _currentMainMode);
+                    return;
+                }
+            }
+        }
+    };
+
+    public void updateInfoBar(Integer percent, @StringRes Integer textResId, @DrawableRes Integer image, int hideInMillis) {
+        if (hideInMillis >= 0) {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    _infoBar.setVisibility(View.GONE);
+                }
+            }, hideInMillis);
+        } else {
+            _infoBar.setVisibility(View.VISIBLE);
+        }
+        if (percent != null) {
+            _infoBarProgressBar.setProgress(percent);
+        }
+        if (textResId != null) {
+            _infoBarText.setText(textResId);
+        }
+        if (image != null) {
+            _infoBarImage.setImageResource(image);
+        }
     }
 
 

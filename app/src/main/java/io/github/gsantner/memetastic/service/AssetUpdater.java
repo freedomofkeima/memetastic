@@ -72,7 +72,7 @@ public class AssetUpdater {
         private boolean _doDownload;
         private Context _context;
         private AppSettings _appSettings;
-        private int _lastPercent = 0;
+        private int _lastPercent = -1;
 
         public UpdateThread(Context context, boolean doDownload) {
             _doDownload = doDownload;
@@ -122,16 +122,18 @@ public class AssetUpdater {
                 file = new File(file, FORMAT_RFC3339.format(date) + ".memetastic.zip");
                 ok = NetworkUtils.downloadFile(URL_ARCHIVE_ZIP, file, new Callback<Float>() {
                     public void onCallback(Float aFloat) {
-                        if (_lastPercent != aFloat.intValue()) {
+                        if (_lastPercent != (int)(aFloat*100)) {
                             AppCast.DOWNLOAD_STATUS.send(_context, DOWNLOAD_STATUS__DOWNLOADING, _lastPercent * 3 / 4);
+                            _lastPercent = (int)(aFloat*100);
                         }
                     }
                 });
                 if (ok) {
                     ok = ZipUtils.unzip(file, templatesDir, true, new Callback<Float>() {
                         public void onCallback(Float aFloat) {
-                            if (_lastPercent != aFloat.intValue()) {
+                            if (_lastPercent != (int)(aFloat*100)) {
                                 AppCast.DOWNLOAD_STATUS.send(_context, DOWNLOAD_STATUS__UNZIPPING, 50 + _lastPercent / 4);
+                                _lastPercent = (int)(aFloat*100);
                             }
                         }
                     });
