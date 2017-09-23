@@ -138,7 +138,7 @@ public class AssetUpdater {
         private AppSettings _appSettings;
 
         public LoadAssetsThread(Context context) {
-            _context = context;
+            _context = context.getApplicationContext();
             _appSettings = AppSettings.get();
         }
 
@@ -153,7 +153,7 @@ public class AssetUpdater {
             fonts.clear();
             images.clear();
 
-            boolean permGranted = ContextCompat.checkSelfPermission(_context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
+            boolean permGranted = ContextCompat.checkSelfPermission(_context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 
             if (permGranted) {
                 loadConfigFromFolder(getDownloadedAssetsDir(_appSettings), fonts, images);

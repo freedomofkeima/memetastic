@@ -20,7 +20,7 @@ import io.github.gsantner.memetastic.activity.MemeCreateActivity;
 import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.data.MemeOriginFavorite;
 import io.github.gsantner.memetastic.util.ContextUtils;
-import io.github.gsantner.memetastic.util.ImageLoaderTask;
+import io.github.gsantner.memetastic.service.ImageLoaderTask;
 
 /**
  * Adapter to show images in a Grid
@@ -144,9 +144,10 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
 
     @Override
     public void onImageLoaded(Bitmap bitmap, ViewHolder holder) {
+        MemeData.Image dataImage = (MemeData.Image) holder.imageView.getTag();
         Animation animation = AnimationUtils.loadAnimation(_activity, R.anim.fadeinfast);
         holder.imageView.startAnimation(animation);
-        if (_memeObject.showFavButton()) {
+        if (dataImage.isTemplate) {
             holder.imageButtonFav.startAnimation(animation);
             holder.imageButtonFav.setVisibility(View.VISIBLE);
         }

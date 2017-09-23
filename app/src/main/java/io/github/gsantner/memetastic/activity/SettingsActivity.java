@@ -16,7 +16,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.util.AppSettings;
-import io.github.gsantner.memetastic.util.ThumbnailCleanupTask;
+import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 
 public class SettingsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     static final int ACTIVITY_ID = 10;

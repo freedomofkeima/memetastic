@@ -96,7 +96,8 @@ public class App extends Application {
     }
 
     public void shareBitmapToOtherApp(Bitmap bitmap, Activity activity) {
-        File imageFile = ContextUtils.get().writeImageToFileJpeg(getCacheDir().getAbsolutePath(), getString(R.string.cached_picture_filename), bitmap);
+        File file = new File(getCacheDir(), getString(R.string.cached_picture_filename));
+        File imageFile = ContextUtils.get().writeImageToFileJpeg(file, bitmap);
         if (imageFile != null) {
             Uri imageUri = FileProvider.getUriForFile(this, getString(R.string.app_fileprovider), imageFile);
             if (imageUri != null) {

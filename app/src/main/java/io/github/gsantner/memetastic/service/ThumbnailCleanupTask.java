@@ -1,4 +1,4 @@
-package io.github.gsantner.memetastic.util;
+package io.github.gsantner.memetastic.service;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,6 +12,7 @@ import java.util.Map;
 
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeOriginStorage;
+import io.github.gsantner.memetastic.util.ContextUtils;
 
 public class ThumbnailCleanupTask extends Thread implements FilenameFilter {
     private String strres_dotThumbnails;
@@ -57,7 +58,7 @@ public class ThumbnailCleanupTask extends Thread implements FilenameFilter {
         }
 
         // Create not existing thumbs
-        MemeOriginStorage memeOriginStorage = new MemeOriginStorage(picPath, strres_dotThumbnails);
+        /*MemeOriginStorage memeOriginStorage = new MemeOriginStorage(picPath, strres_dotThumbnails);
         Map<String, String> missing = memeOriginStorage.getMissingThumbnails();
         for (Map.Entry<String, String> entry : missing.entrySet()) {
             Bitmap bitmap = ContextUtils.get().loadImageFromFilesystem(entry.getKey());
@@ -66,7 +67,7 @@ public class ThumbnailCleanupTask extends Thread implements FilenameFilter {
                 bitmap = ContextUtils.get().scaleBitmap(bitmap);
                 ContextUtils.get().writeImageToFileJpeg(thumbFp.getParent(), thumbFp.getName(), bitmap);
             }
-        }
+        }*/
     }
 
     @Override

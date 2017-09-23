@@ -44,6 +44,7 @@ import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.BuildConfig;
 import io.github.gsantner.memetastic.R;
 import io.github.gsantner.memetastic.data.MemeCategory;
+import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.data.MemeOriginAssets;
 import io.github.gsantner.memetastic.data.MemeOriginFavorite;
@@ -56,7 +57,7 @@ import io.github.gsantner.memetastic.util.ActivityUtils;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
 import io.github.gsantner.memetastic.util.PermissionChecker;
-import io.github.gsantner.memetastic.util.ThumbnailCleanupTask;
+import io.github.gsantner.memetastic.service.ThumbnailCleanupTask;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, TabLayout.OnTabSelectedListener {
@@ -302,7 +303,8 @@ public class MainActivity extends AppCompatActivity
         _tabLayout.setVisibility(item.getItemId() == R.id.action_mode_create ? View.VISIBLE : View.GONE);
         if (memeOriginObject != null) {
             _drawer.closeDrawers();
-            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
+          //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
+            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(MemeData.getImages(), this);
             setRecyclerMemeListAdapter(recyclerMemeAdapter);
             return true;
         }
@@ -428,7 +430,8 @@ public class MainActivity extends AppCompatActivity
             if (app.settings.isShuffleMemeCategories()) {
                 memeOriginObject.shuffleList();
             }
-            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
+            //GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
+            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(MemeData.getImages(), this);
             setRecyclerMemeListAdapter(recyclerMemeAdapter);
         }
 
