@@ -241,6 +241,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public boolean handleBarClick(MenuItem item) {
         MemeOriginInterface memeOriginObject = null;
+        List<MemeData.Image> imageList = new ArrayList<>();
 
         switch (item.getItemId()) {
             case R.id.action_about: {
@@ -289,7 +290,12 @@ public class MainActivity extends AppCompatActivity
             }
             case R.id.action_mode_favs: {
                 _emptylistText.setText(R.string.main__nodata__favourites);
-                memeOriginObject = new MemeOriginFavorite(app.settings.getFavoriteMemes(), getAssets());
+                for (String fav : app.settings.getFavoriteMemes()) {
+                    MemeData.Image img = MemeData.findImage(new File(fav));
+                    if (img != null) {
+                        imageList.add(img);
+                    }
+                }
                 _toolbar.setTitle(R.string.main__mode__favs);
                 break;
             }
@@ -308,7 +314,7 @@ public class MainActivity extends AppCompatActivity
         if (memeOriginObject != null) {
             _drawer.closeDrawers();
             //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
-            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(MemeData.getImages(), this);
+            GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(imageList, this);
             setRecyclerMemeListAdapter(recyclerMemeAdapter);
             return true;
         }

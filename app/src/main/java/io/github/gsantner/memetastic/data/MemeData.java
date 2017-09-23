@@ -25,6 +25,15 @@ public class MemeData implements Serializable {
         _imagesWithTags.clear();
     }
 
+    public static Image findImage(File filePath) {
+        for (Image img : _images) {
+            if (img.fullPath.equals(filePath)) {
+                return img;
+            }
+        }
+        return null;
+    }
+
     public static synchronized List<Image> getImagesWithTag(String tag) {
         if (_imagesWithTags.containsKey(tag)) {
             return _imagesWithTags.get(tag);
