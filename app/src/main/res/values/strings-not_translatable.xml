@@ -54,7 +54,7 @@
     <!-- Pref keys -->
     <string name="pref_key__render_quality_editor_percent" translatable="false">pref_key__render_quality__percent</string>
     <string name="pref_key__cleanup_thumbnails" translatable="false">pref_key__cleanup_thumbnails</string>
-    <string name="pref_key__last_selected_font" translatable="false">pref_key__last_selected_font</string>
+    <string name="pref_key__last_used_font" translatable="false">pref_key__last_used_font</string>
     <string name="pref_key__favourite_meme_templates" translatable="false">pref_key__favourite_meme_templates</string>
     <string name="pref_key__last_selected_tab" translatable="false">pref_key__last_selected_tab</string>
     <string name="pref_key__grid_column_count_portrait" translatable="false">pref_key__grid_column_count_portrait</string>

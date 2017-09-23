@@ -4,6 +4,7 @@ package io.github.gsantner.memetastic.service;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.Typeface;
 
 import net.gsantner.opoc.util.Callback;
 import net.gsantner.opoc.util.FileUtils;
@@ -215,6 +216,7 @@ public class AssetUpdater {
                 MemeData.Font dataFont = new MemeData.Font();
                 dataFont.data = confFont;
                 dataFont.fullPath = new File(folder, confFont.getFilename());
+                dataFont.typeFace = Typeface.createFromFile(dataFont.fullPath);
                 if (dataFont.fullPath.exists()) {
                     dataFonts.add(dataFont);
                 } else {

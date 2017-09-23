@@ -53,7 +53,7 @@ import butterknife.OnTextChanged;
 import butterknife.OnTouch;
 import io.github.gsantner.memetastic.App;
 import io.github.gsantner.memetastic.R;
-import io.github.gsantner.memetastic.data.MemeFont;
+import io.github.gsantner.memetastic.data.MemeData;
 import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.data.MemeSetting;
 import io.github.gsantner.memetastic.data.MemeSettingBase;
@@ -147,16 +147,15 @@ public class MemeCreateActivity extends AppCompatActivity
     }
 
     public void initMemeSettings(Bundle savedInstanceState) {
+        MemeData.Font lastUsedFont = getFont(app.settings.getLastUsedFont());
         Bitmap bitmap = extractBitmapFromIntent(getIntent());
         if (savedInstanceState != null && savedInstanceState.containsKey("memeObj")) {
             memeSetting = (MemeSetting) savedInstanceState.getSerializable("memeObj");
             memeSetting.getImageMain().setImage(bitmap);
-            memeSetting.getCaptionTop().setFont(app.getFonts().get(app.settings.getLastSelectedFont()));
-            memeSetting.getCaptionBottom().setFont(app.getFonts().get(app.settings.getLastSelectedFont()));
+            memeSetting.getCaptionTop().setFont(lastUsedFont);
+            memeSetting.getCaptionBottom().setFont(lastUsedFont);
         } else {
-            memeSetting = new MemeSetting(app.getFonts().get(app.settings.getLastSelectedFont()), bitmap);
-            memeSetting.getCaptionTop().setFontId(app.settings.getLastSelectedFont());
-            memeSetting.getCaptionBottom().setFontId(app.settings.getLastSelectedFont());
+            memeSetting = new MemeSetting(lastUsedFont, bitmap);
         }
         memeSetting.getImageMain().setDisplayImage(memeSetting.getImageMain().getImage().copy(Bitmap.Config.RGB_565, false));
 
@@ -164,6 +163,14 @@ public class MemeCreateActivity extends AppCompatActivity
         textEditBottomCaption.setText(memeSetting.getCaptionBottom().getText());
         memeSetting.setMemeSettingChangedListener(this);
         memeSetting.notifyChangedListener();
+    }
+
+    public MemeData.Font getFont(String filepath) {
+        MemeData.Font font = MemeData.findFont(new File(filepath));
+        if (font == null) {
+            font = MemeData.getFonts().get(0);
+        }
+        return font;
     }
 
     @Override
@@ -435,7 +442,7 @@ public class MemeCreateActivity extends AppCompatActivity
         colorPickerPadding.setColors(MemeLibConfig.MEME_COLORS.ALL);
 
         FontAdapter adapter = new FontAdapter(this,
-                android.R.layout.simple_list_item_1, app.getFonts(),
+                android.R.layout.simple_list_item_1, MemeData.getFonts(),
                 true, getString(R.string.creator__font));
         dropdownFont.setAdapter(adapter);
 
@@ -444,7 +451,7 @@ public class MemeCreateActivity extends AppCompatActivity
         colorPickerText.setSelectedColor(memeSetting.getCaptionTop().getTextColor());
         colorPickerShade.setSelectedColor(memeSetting.getCaptionTop().getBorderColor());
         colorPickerPadding.setSelectedColor(memeSetting.getImageMain().getPaddingColor());
-        dropdownFont.setSelection(memeSetting.getCaptionTop().getFontId());
+        adapter.setSelectedFont(dropdownFont, memeSetting.getCaptionTop().getFont());
         toggleAllCaps.setChecked(memeSetting.getCaptionTop().isAllCaps());
         seekFontSize.setProgress(memeSetting.getCaptionTop().getFontSize() - MemeLibConfig.FONT_SIZES.MIN);
         seekPaddingSize.setProgress(memeSetting.getImageMain().getPadding());
@@ -477,11 +484,9 @@ public class MemeCreateActivity extends AppCompatActivity
             }
 
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                memeSetting.getCaptionTop().setFont((MemeFont) parent.getSelectedItem());
-                memeSetting.getCaptionTop().setFontId(parent.getSelectedItemPosition());
-                memeSetting.getCaptionBottom().setFont((MemeFont) parent.getSelectedItem());
-                memeSetting.getCaptionBottom().setFontId(parent.getSelectedItemPosition());
-                app.settings.setLastSelectedFont(parent.getSelectedItemPosition());
+                memeSetting.getCaptionTop().setFont((MemeData.Font) parent.getSelectedItem());
+                memeSetting.getCaptionBottom().setFont((MemeData.Font) parent.getSelectedItem());
+                app.settings.setLastUsedFont(((MemeData.Font) parent.getSelectedItem()).fullPath.getAbsolutePath());
             }
         });
         SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
@@ -552,7 +557,7 @@ public class MemeCreateActivity extends AppCompatActivity
         // new antialiased Paint
         TextPaint paint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize((int) (memeSetting.getCaptionTop().getFontSize() * scale));
-        paint.setTypeface(memeSetting.getCaptionTop().getFont().getFont());
+        paint.setTypeface(memeSetting.getCaptionTop().getFont().typeFace);
         //paint.setStrokeWidth(memeSetting.getFontSize() / 4);
         paint.setStrokeWidth(borderScale);
 

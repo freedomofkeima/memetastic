@@ -4,18 +4,12 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import io.github.gsantner.memetastic.data.MemeFont;
-import io.github.gsantner.memetastic.data.MemeLibConfig;
 import io.github.gsantner.memetastic.util.AppSettings;
 import io.github.gsantner.memetastic.util.ContextUtils;
 
@@ -25,7 +19,6 @@ import io.github.gsantner.memetastic.util.ContextUtils;
 public class App extends Application {
     private volatile static App app;
     public AppSettings settings;
-    List<MemeFont> fonts;
 
     public static App get() {
         return app;
@@ -37,34 +30,12 @@ public class App extends Application {
         app = this;
 
         settings = AppSettings.get();
-        loadFonts();
 
         if (settings.isAppFirstStart(false)) {
             // Set default values (calculated in getters)
             settings.setGridColumnCountPortrait(settings.getGridColumnCountPortrait());
             settings.setGridColumnCountLandscape(settings.getGridColumnCountLandscape());
         }
-    }
-
-    public void loadFonts() {
-        String FONT_FOLDER = MemeLibConfig.getPath(MemeLibConfig.Assets.FONTS, false);
-        try {
-            String[] fontFilenames = getAssets().list(FONT_FOLDER);
-            FONT_FOLDER = MemeLibConfig.getPath(FONT_FOLDER, true);
-            fonts = new ArrayList<>();
-
-            for (int i = 0; i < fontFilenames.length; i++) {
-                Typeface tf = Typeface.createFromAsset(getResources().getAssets(), FONT_FOLDER + fontFilenames[i]);
-                fonts.add(new MemeFont(FONT_FOLDER + fontFilenames[i], tf));
-            }
-        } catch (IOException e) {
-            log("Could not load fonts");
-            fonts = new ArrayList<>();
-        }
-    }
-
-    public List<MemeFont> getFonts() {
-        return this.fonts;
     }
 
     public void shareBitmapToOtherApp(Bitmap bitmap, Activity activity) {

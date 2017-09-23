@@ -90,12 +90,12 @@ public class AppSettings extends AppSettingsBase {
         return (int) (100 + (939 * (val / 100.0)));
     }
 
-    public void setLastSelectedFont(int value) {
-        setInt(R.string.pref_key__last_selected_font, value);
+    public void setLastUsedFont(String value) {
+        setString(R.string.pref_key__last_used_font, value);
     }
 
-    public int getLastSelectedFont() {
-        return getInt(R.string.pref_key__last_selected_font, 0);
+    public String getLastUsedFont() {
+        return getString(R.string.pref_key__last_used_font, "");
     }
 
     public void setFavoriteMemes(String[] value) {

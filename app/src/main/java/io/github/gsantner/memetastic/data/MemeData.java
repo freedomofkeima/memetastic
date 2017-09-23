@@ -1,5 +1,7 @@
 package io.github.gsantner.memetastic.data;
 
+import android.graphics.Typeface;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,6 +44,15 @@ public class MemeData implements Serializable {
         return null;
     }
 
+    public static Font findFont(File filePath) {
+        for (Font font : _fonts) {
+            if (font.fullPath.equals(filePath)) {
+                return font;
+            }
+        }
+        return null;
+    }
+
     public static synchronized List<Image> getImagesWithTag(String tag) {
         if (_imagesWithTags.containsKey(tag)) {
             return _imagesWithTags.get(tag);
@@ -66,6 +77,7 @@ public class MemeData implements Serializable {
     public static class Font {
         public MemeConfig.Font data;
         public File fullPath;
+        public Typeface typeFace;
     }
 
     public static class Image {
