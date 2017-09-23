@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, TabLayout.OnTabSelectedListener {
     public static final int REQUEST_LOAD_GALLERY_IMAGE = 50;
     public static final int REQUEST_TAKE_CAMERA_PICTURE = 51;
+    public static final int REQUEST_SHOW_IMAGE = 52;
     public static final String IMAGE_PATH = "imagePath";
 
     private static boolean _isShowingFullscreenImage = false;
@@ -311,12 +312,14 @@ public class MainActivity extends AppCompatActivity
             }
 
             case R.id.action_mode_create: {
+                _currentMainMode = 0;
                 _emptylistText.setText(getString(R.string.main__nodata__custom_templates, getString(R.string.custom_templates_visual)));
                 selectTab(app.settings.getLastSelectedTab(), app.settings.getDefaultMainMode());
                 _toolbar.setTitle(R.string.app_name);
                 break;
             }
             case R.id.action_mode_favs: {
+                _currentMainMode = 1;
                 imageList = new ArrayList<>();
                 _emptylistText.setText(R.string.main__nodata__favourites);
                 for (String fav : app.settings.getFavoriteMemeTemplates()) {
@@ -329,6 +332,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
             case R.id.action_mode_saved: {
+                _currentMainMode = 2;
                 _emptylistText.setText(R.string.main__nodata__saved);
                 if (PermissionChecker.hasExtStoragePerm(this)) {
                     File folder = AssetUpdater.getMemesDir(AppSettings.get());
@@ -341,9 +345,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         // Change mode
+        _drawer.closeDrawers();
         _tabLayout.setVisibility(item.getItemId() == R.id.action_mode_create ? View.VISIBLE : View.GONE);
         if (imageList != null) {
-            _drawer.closeDrawers();
             //  GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(memeOriginObject, this);
             GridRecycleAdapter recyclerMemeAdapter = new GridRecycleAdapter(imageList, this);
             setRecyclerMemeListAdapter(recyclerMemeAdapter);
@@ -392,6 +396,9 @@ public class MainActivity extends AppCompatActivity
             } else {
                 ActivityUtils.get(this).showSnackBar(R.string.main__error_no_picture_selected, false);
             }
+        }
+        if (requestCode == REQUEST_SHOW_IMAGE) {
+            selectTab(_tabLayout.getSelectedTabPosition(), _currentMainMode);
         }
     }
 
@@ -446,7 +453,7 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, ImageViewActivity.class);
         intent.putExtra(IMAGE_PATH, imagePath);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        ActivityUtils.get(this).animateToActivity(intent, false, null);
+        ActivityUtils.get(this).animateToActivity(intent, false, REQUEST_SHOW_IMAGE);
     }
 
     @Override

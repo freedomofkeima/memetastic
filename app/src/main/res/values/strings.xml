@@ -99,6 +99,6 @@
     <string name="downloading_failed">Downloading failed</string>
     <string name="unzipping">Unzipping</string>
     <string name="downloading_success">Sucessfully downloaded</string>
-    <string name="download_latest_assets_message">This will download fonts and meme templates. The size of download is about 20MB.</string>
+    <string name="download_latest_assets_message">This will download fonts and meme templates (about 20 MB data)</string>
     <string name="download_latest_assets_title">Download latest assets</string>
 </resources>

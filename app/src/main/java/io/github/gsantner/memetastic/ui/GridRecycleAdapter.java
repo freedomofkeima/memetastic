@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -66,7 +67,8 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
 
         holder.imageView.setOnLongClickListener(new View.OnLongClickListener() {
             public boolean onLongClick(View v) {
-                //onImageLongClicked(pos, holder.imageButtonFav, _imageDataList);
+                MemeData.Image image = (MemeData.Image) v.getTag();
+                Toast.makeText(v.getContext(), image.conf.getTitle(), Toast.LENGTH_SHORT).show();
                 return true;
             }
         });
@@ -104,24 +106,6 @@ public class GridRecycleAdapter extends RecyclerView.Adapter<GridRecycleAdapter.
     public int getItemCount() {
         return _imageDataList.size();
     }
-
-   /* public void onImageLongClicked(final int position, final ImageView iv, final MemeOriginInterface memeObj) {
-        Context context = iv.getContext().getApplicationContext();
-        String pic = _imageDataList.getFilepath(position);
-        if (!pic.contains(context.getString(R.string.app_name))) {
-            pic = pic.substring(pic.lastIndexOf("_") + 1);
-            pic = pic.substring(0, pic.indexOf("."));
-        }
-        Snackbar snackbar = Snackbar.make(_activity.findViewById(android.R.id.content), pic, Snackbar.LENGTH_SHORT);
-        if (memeObj instanceof MemeOriginAssets) {
-            snackbar.setAction(R.string.main__mode__favs, new View.OnClickListener() {
-                public void onClick(View v) {
-                    toggleFavorite(position, iv, memeObj);
-                }
-            });
-        }
-        snackbar.show();
-    }*/
 
     @Override
     public void onImageLoaded(Bitmap bitmap, ViewHolder holder) {

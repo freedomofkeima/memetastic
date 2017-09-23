@@ -132,7 +132,7 @@ public class SettingsActivity extends AppCompatActivity implements SharedPrefere
                         settings.setLastArchiveDate(zero);
                         settings.getDefaultPreferences().edit().commit();
                         new AssetUpdater.UpdateThread(context, true).start();
-
+                        getActivity().finish();
                     }
                 }
             }
